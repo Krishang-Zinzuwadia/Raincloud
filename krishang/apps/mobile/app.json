@@ -1,0 +1,8 @@
+{
+  "expo": {
+    "name": "Farlands",
+    "slug": "farlands-live",
+    "scheme": "farlands",
+    "plugins": ["expo-router", "expo-notifications"]
+  }
+}
