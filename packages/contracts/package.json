@@ -1,0 +1,14 @@
+{
+  "name": "@repo/contracts",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./fixtures": "./src/fixtures.ts",
+    "./json-schema": "./src/json-schema.ts"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.41",
+    "canonicalize": "^2.1.0"
+  }
+}
