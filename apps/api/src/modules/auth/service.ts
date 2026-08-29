@@ -49,12 +49,15 @@ export abstract class AuthService {
   }
 
   static async requireUserId(cookieHeader: string): Promise<string> {
-    const mockUserId = localMockUserId(process.env.NODE_ENV, process.env.MOCK_USER_ID);
-    if (mockUserId) return mockUserId;
-
     const session = await AuthService.getValidSession(cookieHeader);
     if (!session) throw status(401, "Authentication required");
     return session.userId;
+  }
+
+  static async requireServerControlUserId(cookieHeader: string): Promise<string> {
+    const mockUserId = localMockUserId(process.env.NODE_ENV, process.env.MOCK_USER_ID);
+    if (mockUserId) return mockUserId;
+    return AuthService.requireUserId(cookieHeader);
   }
 
   static async requireAdminUserId(cookieHeader: string): Promise<string> {
