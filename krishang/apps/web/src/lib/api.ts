@@ -1,4 +1,4 @@
-const API = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:3001";
+const API = "/api/control-plane";
 
 export type LiveServer = {
   id: string;
@@ -71,10 +71,9 @@ export function joinAddress(server: LiveServer): string {
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API}${path}`, {
     ...init,
-    credentials: "include",
+    credentials: "same-origin",
     headers: {
       "content-type": "application/json",
-      "x-principal": "user:owner-1",
       ...init?.headers,
     },
   });
