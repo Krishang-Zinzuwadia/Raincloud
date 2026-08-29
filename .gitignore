@@ -72,3 +72,5 @@ coverage/
 .claude/worktrees/
 
 tools/pr-gatekeeper/gate.log
+
+*.diff
