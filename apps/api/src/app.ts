@@ -17,6 +17,7 @@ import {
   startPodLogPolling,
 } from "./modules/servers/logs";
 import { ServerService } from "./modules/servers/service";
+import { InMemoryRollupStore, telemetryPlugin } from "./modules/telemetry/index.ts";
 import { velocityModule } from "./modules/velocity/http";
 
 export const app = new Elysia()
@@ -37,6 +38,7 @@ export const app = new Elysia()
   .use(adminModule)
   .use(deployModule)
   .use(velocityModule)
+  .use(telemetryPlugin({ store: new InMemoryRollupStore() }))
   .group("/api/servers/:serverId", (app) => app.use(BackupModule))
   .ws("/api/servers/:serverId/logs", {
     async open(ws: any) {

@@ -5,5 +5,5 @@
     "verbatimModuleSyntax": false,
     "noUncheckedIndexedAccess": false
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", "scripts/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", "test/**/*.ts", "scripts/**/*.ts"]
 }

@@ -68,3 +68,7 @@ Thumbs.db
 
 # Test / coverage
 coverage/
+
+.claude/worktrees/
+
+tools/pr-gatekeeper/gate.log
