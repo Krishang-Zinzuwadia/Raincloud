@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import {
   Bell,
   ChevronRight,
@@ -15,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { type ComponentType, type PointerEvent, useRef, useState } from "react";
+import { api, type LiveListResponse } from "@/lib/api";
 import { DoomPlayer } from "./doom-player";
 import { PanoramaBackground } from "./panorama-background";
 
@@ -25,6 +27,10 @@ type AppDefinition = {
   detail: string;
   icon: ComponentType<{ size?: number; strokeWidth?: number }>;
   color: string;
+};
+
+type HealthResponse = {
+  status: string;
 };
 
 const apps: AppDefinition[] = [
@@ -216,6 +222,36 @@ const initialWindows: WindowState[] = [
 export function Desktop() {
   const [windows, setWindows] = useState<WindowState[]>(initialWindows);
   const dragOperation = useRef<DragOperation | null>(null);
+  const health = useQuery({
+    queryKey: ["control-plane", "health"],
+    queryFn: () => api<HealthResponse>("/health"),
+    retry: 1,
+    refetchInterval: 30_000,
+  });
+  const servers = useQuery({
+    queryKey: ["control-plane", "servers"],
+    queryFn: () => api<LiveListResponse>("/api/servers"),
+    retry: 1,
+    refetchInterval: 15_000,
+  });
+  const connectorState =
+    health.isError || servers.isError
+      ? "unavailable"
+      : health.data?.status === "ok" && servers.data
+        ? "connected"
+        : "checking";
+  const runningRealms = servers.data?.data.filter((server) =>
+    ["running", "ready"].includes(server.currentState.toLocaleLowerCase()),
+  ).length;
+  const totalRealms = servers.data?.data.length;
+  const connectorLabel =
+    connectorState === "unavailable"
+      ? "Control plane unavailable"
+      : connectorState === "checking"
+        ? "Checking control plane"
+        : totalRealms === 0
+          ? "Connected, no realms yet"
+          : `${runningRealms} of ${totalRealms} realms running`;
   const nextZ = () => Math.max(0, ...windows.map((window) => window.z)) + 1;
   const focus = (appId: AppId) =>
     setWindows((items) =>
@@ -314,8 +350,9 @@ export function Desktop() {
         <div className="brand-mark">
           <MapIcon size={18} fill="currentColor" /> FARLANDS <span>LIVE</span>
         </div>
-        <div className="topbar-status">
-          <span className="status-dot" /> All realms online <Bell size={17} />
+        <div className="topbar-status" aria-live="polite">
+          <span className={connectorState === "unavailable" ? "status-dot warn" : "status-dot"} />
+          {connectorLabel} <Bell aria-hidden="true" size={17} />
         </div>
       </header>
       <section className="desktop-icons" aria-label="Desktop applications">
