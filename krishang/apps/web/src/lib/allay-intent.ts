@@ -41,6 +41,11 @@ type CreateTemplateDefinition = {
   body: Omit<CreateMinecraftBody, "name">;
 };
 
+type NamedServer = {
+  id: string;
+  name: string;
+};
+
 const MINECRAFT_CONFIG = {
   maxPlayers: 20,
   difficulty: "normal" as const,
@@ -212,4 +217,46 @@ export function parseAllayIntent(value: string): AllayIntent {
   }
 
   return { kind: "unknown" };
+}
+
+export function findMentionedServer<T extends NamedServer>(
+  servers: T[],
+  value: string,
+  fallbackServerId?: string | null,
+): T | null {
+  if (servers.length === 0) return null;
+  if (servers.length === 1) return servers[0];
+
+  const input = normalize(value);
+  const mentioned = [...servers]
+    .sort((a, b) => b.name.length - a.name.length)
+    .find((server) => {
+      const name = normalize(server.name);
+      return (
+        name.length > 0 && new RegExp(`(?:^|\\s)${escapeRegExp(name)}(?:$|\\s)`, "i").test(input)
+      );
+    });
+
+  if (mentioned) return mentioned;
+
+  const ordinal = input.match(/\b(?:realm|server|workload)?\s*(\d+)\b/);
+  if (ordinal) {
+    const index = Number(ordinal[1]) - 1;
+    if (servers[index]) return servers[index];
+  }
+
+  const usesContext = containsPhrase(input, [
+    "it",
+    "that one",
+    "that realm",
+    "that server",
+    "the realm",
+    "the server",
+  ]);
+
+  if (usesContext && fallbackServerId) {
+    return servers.find((server) => server.id === fallbackServerId) ?? null;
+  }
+
+  return null;
 }
