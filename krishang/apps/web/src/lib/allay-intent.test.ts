@@ -1,6 +1,11 @@
 import { describe, expect, test } from "bun:test";
 
-import { type AllayCreateTemplate, findMentionedServer, parseAllayIntent } from "./allay-intent";
+import {
+  type AllayCreateTemplate,
+  classifyConfirmationReply,
+  findMentionedServer,
+  parseAllayIntent,
+} from "./allay-intent";
 
 describe("parseAllayIntent", () => {
   test("recognizes conversational power commands", () => {
@@ -28,6 +33,12 @@ describe("parseAllayIntent", () => {
   test("falls back safely for empty or unsupported requests", () => {
     expect(parseAllayIntent(" ")).toEqual({ kind: "unknown" });
     expect(parseAllayIntent("tell me a joke")).toEqual({ kind: "unknown" });
+  });
+
+  test("does not turn negated or informational language into mutations", () => {
+    expect(parseAllayIntent("do not start Survival")).toEqual({ kind: "unknown" });
+    expect(parseAllayIntent("never restart Creative")).toEqual({ kind: "unknown" });
+    expect(parseAllayIntent("how do I start Survival?")).toEqual({ kind: "help" });
   });
 
   test.each([
@@ -69,6 +80,8 @@ describe("findMentionedServer", () => {
 
   test("supports numbered choices", () => {
     expect(findMentionedServer(servers, "server 3")?.id).toBe("three");
+    expect(findMentionedServer(servers, "2")?.id).toBe("two");
+    expect(findMentionedServer(servers, "wait 2 minutes")).toBeNull();
   });
 
   test("only uses conversation context for a pronoun", () => {
@@ -78,5 +91,20 @@ describe("findMentionedServer", () => {
 
   test("selects the only available realm without clarification", () => {
     expect(findMentionedServer([servers[0]], "wake my realm")?.id).toBe("one");
+    expect(findMentionedServer([servers[0]], "wake Creative")).toBeNull();
+  });
+});
+
+describe("classifyConfirmationReply", () => {
+  test("only accepts an unambiguous whole reply", () => {
+    expect(classifyConfirmationReply("yes")).toBe("confirm");
+    expect(classifyConfirmationReply("go ahead")).toBe("confirm");
+    expect(classifyConfirmationReply("yes, but don't stop it")).toBe("other");
+    expect(classifyConfirmationReply("confirm status first")).toBe("other");
+  });
+
+  test("recognizes explicit cancellation", () => {
+    expect(classifyConfirmationReply("cancel")).toBe("cancel");
+    expect(classifyConfirmationReply("don't")).toBe("cancel");
   });
 });

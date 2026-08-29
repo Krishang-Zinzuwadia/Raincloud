@@ -17,6 +17,7 @@ import {
   type AllayCreateIntent,
   type AllayIntent,
   type AllayPowerAction,
+  classifyConfirmationReply,
   createTemplateLabel,
   findMentionedServer,
   parseAllayIntent,
@@ -52,7 +53,7 @@ type CreateServerResponse = {
 };
 
 type PendingConfirmation = {
-  action: "stop" | "restart";
+  action: AllayPowerAction;
   serverId: string;
 };
 
@@ -424,18 +425,14 @@ export function AllayCompanion({
     }
 
     if (!validatePowerAction(server, intent.action)) return;
-    if (intent.action === "stop" || intent.action === "restart") {
-      setPendingConfirmation({ action: intent.action, serverId: server.id });
-      appendMessage(
-        "allay",
-        intent.action === "stop"
-          ? `Stopping ${server.name} will make the ${workloadNoun(server)} unavailable. Should I continue?`
-          : `Restarting ${server.name} will briefly make the ${workloadNoun(server)} unavailable. Should I continue?`,
-      );
-      return;
-    }
-
-    void runPowerAction(server, intent.action);
+    setPendingConfirmation({ action: intent.action, serverId: server.id });
+    const impact =
+      intent.action === "start"
+        ? `Start ${server.name}? This sends a live command to the control plane.`
+        : intent.action === "stop"
+          ? `Stop ${server.name}? The ${workloadNoun(server)} will become unavailable.`
+          : `Restart ${server.name}? The ${workloadNoun(server)} will be briefly unavailable.`;
+    appendMessage("allay", `${impact} Please confirm or cancel.`);
   }
 
   function resolveTarget(intent: TargetIntent, value: string) {
@@ -457,16 +454,16 @@ export function AllayCompanion({
   }
 
   function respond(value: string) {
-    const normalized = value.trim().toLocaleLowerCase();
+    const confirmationReply = classifyConfirmationReply(value);
 
     if (pendingCreate) {
-      if (/^(yes|yep|confirm|continue|create it|do it|please do)\b/.test(normalized)) {
+      if (confirmationReply === "confirm") {
         const intent = pendingCreate;
         setPendingCreate(null);
         void runCreate(intent);
         return;
       }
-      if (/^(no|nope|cancel|never mind|nevermind|leave it)\b/.test(normalized)) {
+      if (confirmationReply === "cancel") {
         const name = pendingCreate.body.name;
         setPendingCreate(null);
         appendMessage("allay", `${name} will not be created.`);
@@ -477,7 +474,7 @@ export function AllayCompanion({
     }
 
     if (pendingConfirmation) {
-      if (/^(yes|yep|confirm|continue|do it|please do)\b/.test(normalized)) {
+      if (confirmationReply === "confirm") {
         const server = selectedServer(pendingConfirmation.serverId);
         const action = pendingConfirmation.action;
         setPendingConfirmation(null);
@@ -485,23 +482,41 @@ export function AllayCompanion({
         else explainNoServers();
         return;
       }
-      if (/^(no|nope|cancel|never mind|nevermind|leave it)\b/.test(normalized)) {
+      if (confirmationReply === "cancel") {
         const server = selectedServer(pendingConfirmation.serverId);
         setPendingConfirmation(null);
         appendMessage("allay", `${server?.name ?? "The workload"} will stay as it is.`);
         return;
       }
+      appendMessage(
+        "allay",
+        "I need a clear “confirm” or “cancel” before I handle another command.",
+      );
+      return;
     }
 
+    let parsedIntent: AllayIntent | null = null;
     if (pendingSelection) {
-      const server = findMentionedServer(availableServers, value, activeServerId);
-      if (server) {
-        targetIntent(pendingSelection, server);
+      if (confirmationReply === "cancel") {
+        setPendingSelection(null);
+        appendMessage("allay", "Okay, I cancelled that realm selection.");
         return;
       }
+
+      parsedIntent = parseAllayIntent(value);
+      if (parsedIntent.kind === "unknown") {
+        const server = findMentionedServer(availableServers, value, activeServerId);
+        if (server) {
+          targetIntent(pendingSelection, server);
+          return;
+        }
+        appendMessage("allay", "Choose a realm by name or number, or say “cancel”.");
+        return;
+      }
+      setPendingSelection(null);
     }
 
-    const intent = parseAllayIntent(value);
+    const intent = parsedIntent ?? parseAllayIntent(value);
     if (intent.kind === "greeting") {
       appendMessage("allay", `Hi ${operatorName}. Tell me what you want to create or manage.`);
       return;
@@ -672,12 +687,15 @@ export function AllayCompanion({
                 <div className="allay-confirmation">
                   <CircleAlert aria-hidden="true" size={17} />
                   <div>
-                    <strong>Availability-impacting command</strong>
-                    <span>The workload may be briefly unavailable.</span>
+                    <strong>
+                      Confirm {actionLabel(pendingConfirmation.action)}{" "}
+                      {selectedServer(pendingConfirmation.serverId)?.name ?? "realm"}
+                    </strong>
+                    <span>This sends a live power command to the control plane.</span>
                   </div>
                   <div className="allay-confirmation-actions">
                     <button className="confirm" onClick={confirmAction} type="button">
-                      <Check aria-hidden="true" size={15} /> Continue
+                      <Check aria-hidden="true" size={15} /> {humanize(pendingConfirmation.action)}
                     </button>
                     <button onClick={cancelAction} type="button">
                       Cancel

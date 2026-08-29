@@ -104,6 +104,9 @@ const CREATE_PHRASES = [
   "new",
 ];
 
+const MUTATION_WORDS =
+  "(?:start|wake|boot|stop|sleep|restart|reboot|create|make|provision|host|launch)";
+
 function normalize(value: string) {
   return value
     .toLocaleLowerCase()
@@ -121,6 +124,56 @@ function containsPhrase(input: string, phrases: string[]) {
   return phrases.some((phrase) =>
     new RegExp(`\\b${escapeRegExp(phrase).replaceAll(" ", "\\s+")}\\b`, "i").test(input),
   );
+}
+
+function hasNegatedMutation(input: string): boolean {
+  return new RegExp(
+    `\\b(?:do\\s+not|don\\s+t|never|avoid|without)\\s+(?:\\w+\\s+){0,2}${MUTATION_WORDS}\\b`,
+  ).test(input);
+}
+
+function asksAboutMutation(input: string): boolean {
+  return new RegExp(
+    `^(?:how\\s+(?:do|can|would|should)\\s+i|how\\s+to|what\\s+happens\\s+if|should\\s+i|can\\s+i|would\\s+it)\\b.*\\b${MUTATION_WORDS}\\b`,
+  ).test(input);
+}
+
+export type ConfirmationReply = "confirm" | "cancel" | "other";
+
+export function classifyConfirmationReply(value: string): ConfirmationReply {
+  const input = normalize(value);
+  if (
+    [
+      "yes",
+      "yes please",
+      "yep",
+      "confirm",
+      "continue",
+      "do it",
+      "please do",
+      "create it",
+      "go ahead",
+    ].includes(input)
+  ) {
+    return "confirm";
+  }
+  if (
+    [
+      "no",
+      "nope",
+      "cancel",
+      "never mind",
+      "nevermind",
+      "leave it",
+      "do not",
+      "don t",
+      "abort",
+      "stop",
+    ].includes(input)
+  ) {
+    return "cancel";
+  }
+  return "other";
 }
 
 function createName(value: string, fallback: string): string {
@@ -158,6 +211,8 @@ export function parseAllayIntent(value: string): AllayIntent {
   const input = normalize(value);
 
   if (!input) return { kind: "unknown" };
+  if (hasNegatedMutation(input)) return { kind: "unknown" };
+  if (asksAboutMutation(input)) return { kind: "help" };
 
   const createIntent = parseCreateIntent(value, input);
   if (createIntent) return createIntent;
@@ -234,7 +289,6 @@ export function findMentionedServer<T extends NamedServer>(
   fallbackServerId?: string | null,
 ): T | null {
   if (servers.length === 0) return null;
-  if (servers.length === 1) return servers[0];
 
   const input = normalize(value);
   const mentioned = [...servers]
@@ -248,7 +302,7 @@ export function findMentionedServer<T extends NamedServer>(
 
   if (mentioned) return mentioned;
 
-  const ordinal = input.match(/\b(?:realm|server|workload)?\s*(\d+)\b/);
+  const ordinal = input.match(/^(?:(?:realm|server|workload)\s+)?(\d+)(?:\s+please)?$/);
   if (ordinal) {
     const index = Number(ordinal[1]) - 1;
     if (servers[index]) return servers[index];
@@ -266,6 +320,11 @@ export function findMentionedServer<T extends NamedServer>(
   if (usesContext && fallbackServerId) {
     return servers.find((server) => server.id === fallbackServerId) ?? null;
   }
+
+  const genericSoleTarget = new RegExp(
+    `^(?:please\\s+)?(?:${MUTATION_WORDS.slice(3, -1)}|status|state|check|copy)\\s+(?:(?:my|the|that)\\s+)?(?:realm|server|workload|it)(?:\\s+please)?$`,
+  ).test(input);
+  if (servers.length === 1 && genericSoleTarget) return servers[0];
 
   return null;
 }
