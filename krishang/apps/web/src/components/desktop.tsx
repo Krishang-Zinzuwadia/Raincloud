@@ -260,6 +260,16 @@ const initialWindows: WindowState[] = [
   { appId: "realms", x: 220, y: 190, z: 1, minimized: false, maximized: false },
 ];
 
+function focusWindow(items: WindowState[], appId: AppId): WindowState[] {
+  const ordered = [...items].sort((a, b) => a.z - b.z);
+  const target = ordered.find((item) => item.appId === appId);
+  if (!target) return items;
+
+  return [...ordered.filter((item) => item.appId !== appId), { ...target, minimized: false }].map(
+    (item, index) => ({ ...item, z: index + 1 }),
+  );
+}
+
 export function Desktop() {
   const [windows, setWindows] = useState<WindowState[]>(initialWindows);
   const dragOperation = useRef<DragOperation | null>(null);
@@ -293,25 +303,26 @@ export function Desktop() {
         : totalRealms === 0
           ? "Connected, no realms yet"
           : `${runningRealms} of ${totalRealms} realms running`;
-  const nextZ = () => Math.max(0, ...windows.map((window) => window.z)) + 1;
-  const focus = (appId: AppId) =>
-    setWindows((items) =>
-      items.map((window) =>
-        window.appId === appId ? { ...window, z: nextZ(), minimized: false } : window,
-      ),
-    );
+  const focus = (appId: AppId) => setWindows((items) => focusWindow(items, appId));
   const open = (appId: AppId) =>
     setWindows((items) => {
       const found = items.some((window) => window.appId === appId);
-      if (found)
-        return items.map((window) =>
-          window.appId === appId ? { ...window, minimized: false, z: nextZ() } : window,
-        );
+      if (found) return focusWindow(items, appId);
       const offset = 36 * items.length;
-      return [
-        ...items,
-        { appId, x: 140 + offset, y: 118 + offset, z: nextZ(), minimized: false, maximized: false },
-      ];
+      return focusWindow(
+        [
+          ...items,
+          {
+            appId,
+            x: 140 + offset,
+            y: 118 + offset,
+            z: 0,
+            minimized: false,
+            maximized: false,
+          },
+        ],
+        appId,
+      );
     });
   const close = (appId: AppId) =>
     setWindows((items) => items.filter((window) => window.appId !== appId));
@@ -321,10 +332,13 @@ export function Desktop() {
     );
   const toggleMaximize = (appId: AppId) =>
     setWindows((items) =>
-      items.map((window) =>
-        window.appId === appId
-          ? { ...window, maximized: !window.maximized, z: nextZ(), minimized: false }
-          : window,
+      focusWindow(
+        items.map((window) =>
+          window.appId === appId
+            ? { ...window, maximized: !window.maximized, minimized: false }
+            : window,
+        ),
+        appId,
       ),
     );
   const beginDrag = (appId: AppId, event: PointerEvent<HTMLDivElement>) => {
