@@ -355,6 +355,19 @@ a {
 .realm-row:hover {
   background: #eddcc8;
 }
+.realm-row.live-realm-row,
+.realm-row.live-realm-row:hover {
+  background: #f7efe3;
+  cursor: default;
+}
+.live-realm-row > span:nth-child(2) {
+  min-width: 0;
+}
+.live-realm-row .realm-tps {
+  max-width: 50%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
 .realm-row span:nth-child(2) {
   flex: 1;
 }
@@ -591,6 +604,16 @@ a {
   }
   .window-content {
     padding: 0.85rem;
+  }
+  .live-realm-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .live-realm-row .realm-tps {
+    width: 100%;
+    max-width: none;
+    margin-left: 1.3rem;
+    text-align: left;
   }
   .sun,
   .cloud {
@@ -913,7 +936,7 @@ a {
 }
 
 .allay-working svg,
-.allay-pet-state svg {
+.allay-sprite.is-busy + .allay-pet-state svg {
   animation: rotate 1s linear infinite;
 }
 

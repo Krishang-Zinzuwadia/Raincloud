@@ -176,6 +176,10 @@ export function AllayCompanion({
   const [busyCreate, setBusyCreate] = useState<AllayCreateIntent | null>(null);
   const messageId = useRef(2);
   const transcriptRef = useRef<HTMLDivElement>(null);
+  const composerRef = useRef<HTMLInputElement>(null);
+  const confirmationButtonRef = useRef<HTMLButtonElement>(null);
+  const petButtonRef = useRef<HTMLButtonElement>(null);
+  const wasBusy = useRef(false);
 
   const availableServers = servers ?? [];
   const busyServer = busyAction
@@ -241,8 +245,38 @@ export function AllayCompanion({
     });
   }, [transcriptRevision, reducedMotion]);
 
+  useEffect(() => {
+    if (busy) {
+      wasBusy.current = true;
+      return;
+    }
+    if (wasBusy.current && open) {
+      wasBusy.current = false;
+      window.requestAnimationFrame(() => composerRef.current?.focus());
+    }
+  }, [busy, open]);
+
+  useEffect(() => {
+    if (!pendingConfirmation && !pendingCreate) return;
+    window.requestAnimationFrame(() => confirmationButtonRef.current?.focus());
+  }, [pendingConfirmation, pendingCreate]);
+
   function appendMessage(from: AllayMessage["from"], text: string, tone?: AllayMessage["tone"]) {
     setMessages((items) => [...items, { id: messageId.current++, from, text, tone }]);
+  }
+
+  function closeChat() {
+    setOpen(false);
+    window.requestAnimationFrame(() => petButtonRef.current?.focus());
+  }
+
+  function toggleChat() {
+    const nextOpen = !open;
+    setOpen((value) => !value);
+    window.requestAnimationFrame(() => {
+      if (nextOpen) composerRef.current?.focus();
+      else petButtonRef.current?.focus();
+    });
   }
 
   function selectedServer(serverId: string) {
@@ -326,6 +360,7 @@ export function AllayCompanion({
       });
       await refreshServers().catch(() => undefined);
       const reference = result.data?.id ? ` Its workload ID is ${result.data.id}.` : "";
+      if (result.data?.id) setActiveServerId(result.data.id);
       appendMessage(
         "allay",
         `${intent.body.name} was created successfully.${reference}`,
@@ -598,6 +633,7 @@ export function AllayCompanion({
     setPendingConfirmation(null);
     appendMessage("operator", "Leave it as it is.");
     appendMessage("allay", `${server?.name ?? "The workload"} will stay as it is.`);
+    window.requestAnimationFrame(() => composerRef.current?.focus());
   }
 
   function confirmCreate() {
@@ -614,6 +650,7 @@ export function AllayCompanion({
     setPendingCreate(null);
     appendMessage("operator", "Cancel that create request.");
     appendMessage("allay", `${name} will not be created.`);
+    window.requestAnimationFrame(() => composerRef.current?.focus());
   }
 
   return (
@@ -626,6 +663,7 @@ export function AllayCompanion({
             className="allay-chat pixel-border"
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 8 }}
             initial={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 8 }}
+            id="allay-chat-panel"
             transition={{ duration: reducedMotion ? 0 : 0.18, ease: [0.22, 1, 0.36, 1] }}
           >
             <header className="allay-chat-header">
@@ -635,7 +673,7 @@ export function AllayCompanion({
                   <span aria-hidden="true" /> {connectionLabel}
                 </span>
               </div>
-              <button aria-label="Close Allay chat" onClick={() => setOpen(false)} type="button">
+              <button aria-label="Close Allay chat" onClick={closeChat} type="button">
                 <X aria-hidden="true" size={16} />
               </button>
             </header>
@@ -673,7 +711,12 @@ export function AllayCompanion({
                     <span>{createSummary(pendingCreate)}</span>
                   </div>
                   <div className="allay-confirmation-actions">
-                    <button className="confirm" onClick={confirmCreate} type="button">
+                    <button
+                      className="confirm"
+                      onClick={confirmCreate}
+                      ref={confirmationButtonRef}
+                      type="button"
+                    >
                       <Check aria-hidden="true" size={15} /> Create
                     </button>
                     <button onClick={cancelCreate} type="button">
@@ -694,7 +737,12 @@ export function AllayCompanion({
                     <span>This sends a live power command to the control plane.</span>
                   </div>
                   <div className="allay-confirmation-actions">
-                    <button className="confirm" onClick={confirmAction} type="button">
+                    <button
+                      className="confirm"
+                      onClick={confirmAction}
+                      ref={confirmationButtonRef}
+                      type="button"
+                    >
                       <Check aria-hidden="true" size={15} /> {humanize(pendingConfirmation.action)}
                     </button>
                     <button onClick={cancelAction} type="button">
@@ -734,6 +782,7 @@ export function AllayCompanion({
               </label>
               <input
                 autoComplete="off"
+                ref={composerRef}
                 disabled={busy}
                 id="allay-command"
                 maxLength={180}
@@ -764,10 +813,12 @@ export function AllayCompanion({
           </motion.span>
         ) : null}
         <button
+          aria-controls="allay-chat-panel"
           aria-expanded={open}
           aria-label={open ? "Close Allay chat" : "Open Allay manual control chat"}
           className="allay-pet-button"
-          onClick={() => setOpen((value) => !value)}
+          onClick={toggleChat}
+          ref={petButtonRef}
           type="button"
         >
           <AllaySprite busy={busy} />

@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { type ComponentType, type PointerEvent, useRef, useState } from "react";
-import { api, type LiveListResponse } from "@/lib/api";
+import { api, joinAddress, type LiveListResponse, type LiveServer } from "@/lib/api";
 import { AllayCompanion } from "./allay-companion";
 import { DoomPlayer } from "./doom-player";
 import { PanoramaBackground } from "./panorama-background";
@@ -30,12 +30,20 @@ type AppDefinition = {
   color: string;
 };
 
+type ConnectorState = "checking" | "connected" | "unavailable";
+
 type HealthResponse = {
   status: string;
 };
 
 const apps: AppDefinition[] = [
-  { id: "realms", label: "My Realms", detail: "3 servers", icon: Server, color: "#7a4f33" },
+  {
+    id: "realms",
+    label: "My Realms",
+    detail: "Live inventory",
+    icon: Server,
+    color: "#7a4f33",
+  },
   {
     id: "review",
     label: "Review Queue",
@@ -49,38 +57,70 @@ const apps: AppDefinition[] = [
   { id: "doom", label: "DOOM", detail: "Shareware", icon: Skull, color: "#9b3f2f" },
 ];
 
-function WindowBody({ app, close }: { app: AppDefinition; close: () => void }) {
+function WindowBody({
+  app,
+  close,
+  connectorState,
+  liveServers,
+  serversLoading,
+}: {
+  app: AppDefinition;
+  close: () => void;
+  connectorState: ConnectorState;
+  liveServers: LiveServer[] | undefined;
+  serversLoading: boolean;
+}) {
   if (app.id === "doom") return <DoomPlayer />;
-  if (app.id === "realms")
+  if (app.id === "realms") {
+    const realms = liveServers ?? [];
+    const running = realms.filter(
+      (server) => server.currentState.toLocaleLowerCase() === "running",
+    ).length;
     return (
       <>
         <div className="window-hero">
-          <p className="eyebrow">3 realms under your care</p>
-          <h2>Good evening, Krishang.</h2>
-          <p>Everything is green. Your players are having a great night.</p>
+          <p className="eyebrow">
+            {serversLoading ? "Loading live inventory" : `${realms.length} realms under your care`}
+          </p>
+          <h2>
+            {connectorState === "unavailable" ? "Last known realm state" : "Your realms, live."}
+          </h2>
+          <p>
+            {connectorState === "unavailable"
+              ? "The connector is offline. Controls stay disabled until live truth returns."
+              : `${running} of ${realms.length} realms are running.`}
+          </p>
         </div>
         <div className="realm-list">
-          {[
-            "Emerald SMP|18 / 40 players|19.9 TPS",
-            "Nether Run|6 / 20 players|20.0 TPS",
-            "Creative Quarry|Sleeping|Ready when you are",
-          ].map((line) => {
-            const [name, players, tps] = line.split("|");
+          {serversLoading ? <p role="status">Checking the control plane…</p> : null}
+          {!serversLoading && realms.length === 0 ? (
+            <p>
+              {connectorState === "unavailable"
+                ? "No cached realms are available."
+                : "No realms yet. Ask Allay to create one."}
+            </p>
+          ) : null}
+          {realms.map((server) => {
+            const state = server.currentState.replaceAll("_", " ");
             return (
-              <button className="realm-row" key={name} type="button">
-                <span className="status-dot" />
+              <div className="realm-row live-realm-row" key={server.id}>
+                <span
+                  className={server.currentState === "running" ? "status-dot" : "status-dot warn"}
+                />
                 <span>
-                  <b>{name}</b>
-                  <small>{players}</small>
+                  <b>{server.name}</b>
+                  <small>{state}</small>
                 </span>
-                <span className="realm-tps">{tps}</span>
-                <ChevronRight size={18} />
-              </button>
+                <span className="realm-tps">
+                  {server.hostname ? joinAddress(server) : `Minecraft ${server.version ?? "realm"}`}
+                </span>
+              </div>
             );
           })}
         </div>
       </>
     );
+  }
   if (app.id === "review")
     return (
       <>
@@ -235,7 +275,7 @@ export function Desktop() {
     retry: 1,
     refetchInterval: 15_000,
   });
-  const connectorState =
+  const connectorState: ConnectorState =
     health.isError || servers.isError
       ? "unavailable"
       : health.data?.status === "ok" && servers.data
@@ -427,7 +467,13 @@ export function Desktop() {
                 </div>
               </div>
               <div className={`window-content ${app.id === "doom" ? "doom-window-content" : ""}`}>
-                <WindowBody app={app} close={() => open("review")} />
+                <WindowBody
+                  app={app}
+                  close={() => open("review")}
+                  connectorState={connectorState}
+                  liveServers={servers.data?.data}
+                  serversLoading={servers.isPending}
+                />
               </div>
             </section>
           );
