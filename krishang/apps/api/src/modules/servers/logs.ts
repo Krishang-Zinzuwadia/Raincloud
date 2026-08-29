@@ -1,8 +1,5 @@
 import * as k8s from "@kubernetes/client-node";
-import {
-  getKubernetesStatusCode,
-  makeKubernetesClients,
-} from "../provisioning/kubernetes";
+import { getKubernetesStatusCode, makeKubernetesClients } from "../provisioning/kubernetes";
 
 export type ServerLogK8sRecord = {
   namespace: string | null;
@@ -44,7 +41,7 @@ export type LogPodResolutionErrorCode =
 export class LogPodResolutionError extends Error {
   constructor(
     public readonly code: LogPodResolutionErrorCode,
-    message: string
+    message: string,
   ) {
     super(message);
     this.name = "LogPodResolutionError";
@@ -68,8 +65,7 @@ function chooseBestPod(pods: k8s.V1Pod[]): k8s.V1Pod | null {
 
   return [...pods].sort((left, right) => {
     const runningDelta =
-      (right.status?.phase === "Running" ? 1 : 0) -
-      (left.status?.phase === "Running" ? 1 : 0);
+      (right.status?.phase === "Running" ? 1 : 0) - (left.status?.phase === "Running" ? 1 : 0);
 
     if (runningDelta !== 0) return runningDelta;
 
@@ -87,7 +83,7 @@ function chooseBestPod(pods: k8s.V1Pod[]): k8s.V1Pod | null {
 async function readStoredPod(
   coreApi: k8s.CoreV1Api,
   namespace: string,
-  podName: string
+  podName: string,
 ): Promise<k8s.V1Pod | null> {
   try {
     return await coreApi.readNamespacedPod({ name: podName, namespace });
@@ -103,7 +99,7 @@ async function readStoredPod(
 async function assertDeploymentExists(
   appsApi: k8s.AppsV1Api,
   namespace: string,
-  deploymentName: string
+  deploymentName: string,
 ): Promise<void> {
   try {
     await appsApi.readNamespacedDeployment({ name: deploymentName, namespace });
@@ -111,7 +107,7 @@ async function assertDeploymentExists(
     if (getKubernetesStatusCode(error) === 404) {
       throw new LogPodResolutionError(
         "deployment-missing",
-        "Kubernetes deployment is missing for this server."
+        "Kubernetes deployment is missing for this server.",
       );
     }
 
@@ -123,7 +119,7 @@ export async function resolveServerLogPod(
   coreApi: k8s.CoreV1Api,
   appsApi: k8s.AppsV1Api,
   serverId: string,
-  k8sRecord: ServerLogK8sRecord | null | undefined
+  k8sRecord: ServerLogK8sRecord | null | undefined,
 ): Promise<ResolvedLogPod> {
   if (
     !k8sRecord?.namespace ||
@@ -132,7 +128,7 @@ export async function resolveServerLogPod(
   ) {
     throw new LogPodResolutionError(
       "missing-metadata",
-      "Kubernetes metadata was not found for this server."
+      "Kubernetes metadata was not found for this server.",
     );
   }
 
@@ -153,17 +149,14 @@ export async function resolveServerLogPod(
 
   if (!selectedPod?.metadata?.name) {
     await assertDeploymentExists(appsApi, namespace, deploymentName);
-    throw new LogPodResolutionError(
-      "pod-not-ready",
-      "Server pod is not ready yet."
-    );
+    throw new LogPodResolutionError("pod-not-ready", "Server pod is not ready yet.");
   }
 
   const containerName = getPrimaryContainerName(selectedPod);
   if (!containerName) {
     throw new LogPodResolutionError(
       "container-missing",
-      "No containers were found in the server pod."
+      "No containers were found in the server pod.",
     );
   }
 
@@ -217,7 +210,7 @@ async function readPodLogText({
         },
       ],
       middlewareMergeStrategy: "append",
-    }
+    },
   );
 }
 
@@ -231,7 +224,7 @@ export async function startPodLogPolling(
     intervalMs?: number;
     readLogText?: PodLogTextReader;
   },
-  onChunk: (chunk: string) => void
+  onChunk: (chunk: string) => void,
 ): Promise<LogStreamHandle> {
   const seenLines = new Set<string>();
   let stopped = false;
@@ -271,10 +264,7 @@ export async function startPodLogPolling(
     polling = true;
     readLogs(100, Math.max(2, Math.ceil(intervalMs / 1000) + 1))
       .catch((error) => {
-        console.error(
-          `[${params.podName}] Failed to poll Kubernetes logs:`,
-          error
-        );
+        console.error(`[${params.podName}] Failed to poll Kubernetes logs:`, error);
       })
       .finally(() => {
         polling = false;

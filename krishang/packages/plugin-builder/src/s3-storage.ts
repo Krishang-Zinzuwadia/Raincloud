@@ -11,7 +11,7 @@ function isMissing(error: unknown): boolean {
 export async function putWriteOnce(
   key: string,
   body: Uint8Array,
-  contentType: string
+  contentType: string,
 ): Promise<string> {
   const bucket = getS3Bucket();
   const prefix = getS3Prefix();
@@ -34,7 +34,7 @@ export async function putWriteOnce(
       CacheControl: "no-store",
       ObjectLockMode: "GOVERNANCE",
       ObjectLockRetainUntilDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 365),
-    })
+    }),
   );
 
   return `s3://${bucket}/${Key}`;

@@ -1,30 +1,29 @@
 import {
+  type AnyPgColumn,
+  index,
+  integer,
+  jsonb,
   pgTable,
   text,
   timestamp,
-  integer,
-  jsonb,
-  index,
-  AnyPgColumn,
 } from "drizzle-orm/pg-core";
-
-import { gameServers } from "./servers";
 import { jobStatusEnum, jobTypeEnum } from "./enums";
+import { gameServers } from "./servers";
 
 export const serverJobs = pgTable(
   "server_jobs",
   {
     id: text("id").primaryKey(),
-    serverId: text("server_id").notNull()
+    serverId: text("server_id")
+      .notNull()
       .references(() => gameServers.id, { onDelete: "cascade" }),
 
     type: jobTypeEnum("type").notNull(),
     status: jobStatusEnum("status").notNull().default("queued"),
 
-    dependsOnJobId: text("depends_on_job_id").references(
-      (): AnyPgColumn => serverJobs.id,
-      { onDelete: "set null" }
-    ),
+    dependsOnJobId: text("depends_on_job_id").references((): AnyPgColumn => serverJobs.id, {
+      onDelete: "set null",
+    }),
 
     attempts: integer("attempts").notNull().default(0),
     maxAttempts: integer("max_attempts").notNull().default(3),

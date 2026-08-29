@@ -48,11 +48,10 @@ describe("approvals", () => {
         body: JSON.stringify({
           serverId: "server-1",
           ruleSetVersion: "00000000-0000-4000-8000-0000000000a2",
-          contentDigest:
-            "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          contentDigest: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
           issuedTo: "flk_cli-1",
         }),
-      })
+      }),
     );
     expect(res.status).toBe(403);
     const body = (await res.json()) as { code: string };
@@ -70,24 +69,23 @@ describe("approvals", () => {
         body: JSON.stringify({
           serverId: "server-1",
           ruleSetVersion: "00000000-0000-4000-8000-0000000000a2",
-          contentDigest:
-            "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          contentDigest: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
           issuedTo: "flk_cli-1",
         }),
-      })
+      }),
     );
     expect(mint.status).toBe(200);
     const minted = (await mint.json()) as { token: string };
     const first = store.redeem(
       minted.token,
       "flk_cli-1",
-      "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     );
     expect(first.ok).toBe(true);
     const second = store.redeem(
       minted.token,
       "flk_cli-1",
-      "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     );
     expect(second.ok).toBe(false);
     if (!second.ok) expect(second.refusal.code).toBe("approval_consumed");
@@ -95,15 +93,14 @@ describe("approvals", () => {
     const minted2 = store.mint({
       serverId: "server-1",
       ruleSetVersion: "00000000-0000-4000-8000-0000000000a2",
-      contentDigest:
-        "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      contentDigest: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
       issuedTo: "flk_cli-1",
       issuedBy: "user:owner-1",
     });
     const wrong = store.redeem(
       minted2.token,
       "flk_other",
-      "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+      "sha256:2222222222222222222222222222222222222222222222222222222222222222",
     );
     expect(wrong.ok).toBe(false);
     if (!wrong.ok) expect(wrong.refusal.code).toBe("approval_principal_mismatch");
@@ -113,8 +110,7 @@ describe("approvals", () => {
     const minted = store.mint({
       serverId: "server-1",
       ruleSetVersion: "00000000-0000-4000-8000-0000000000a2",
-      contentDigest:
-        "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+      contentDigest: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
       issuedTo: "flk_cli-1",
       issuedBy: "user:owner-1",
     });

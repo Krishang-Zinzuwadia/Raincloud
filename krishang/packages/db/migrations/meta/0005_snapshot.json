@@ -1912,15 +1912,7 @@
     "public.job_status": {
       "name": "job_status",
       "schema": "public",
-      "values": [
-        "queued",
-        "blocked",
-        "processing",
-        "completed",
-        "failed",
-        "exhausted",
-        "cancelled"
-      ]
+      "values": ["queued", "blocked", "processing", "completed", "failed", "exhausted", "cancelled"]
     },
     "public.job_type": {
       "name": "job_type",

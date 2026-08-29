@@ -1,8 +1,8 @@
 "use client";
 
+import type { Proposal } from "@repo/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { Proposal } from "@repo/contracts";
 
 export default function ProposalsPage() {
   const { data } = useQuery({
@@ -10,8 +10,7 @@ export default function ProposalsPage() {
     queryFn: () => api<{ data: Proposal[] }>("/v1/servers/server-1/proposals"),
   });
   const approve = useMutation({
-    mutationFn: (id: string) =>
-      api(`/v1/proposals/${id}/approve`, { method: "POST" }),
+    mutationFn: (id: string) => api(`/v1/proposals/${id}/approve`, { method: "POST" }),
   });
 
   return (

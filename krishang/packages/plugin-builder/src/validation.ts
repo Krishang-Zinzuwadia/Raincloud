@@ -14,10 +14,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-function optionalRecord(
-  value: unknown,
-  field: string
-): Record<string, unknown> | undefined {
+function optionalRecord(value: unknown, field: string): Record<string, unknown> | undefined {
   if (value === undefined) {
     return undefined;
   }
@@ -33,7 +30,7 @@ function optionalString(
   value: unknown,
   field: string,
   maxLength: number,
-  pattern?: RegExp
+  pattern?: RegExp,
 ): string | undefined {
   if (value === undefined) {
     return undefined;
@@ -58,7 +55,7 @@ function requiredString(
   value: unknown,
   field: string,
   maxLength: number,
-  pattern?: RegExp
+  pattern?: RegExp,
 ): string {
   if (value === undefined) {
     throw new Error(`${field} is required`);
@@ -77,30 +74,20 @@ function optionalInteger(
   value: unknown,
   field: string,
   min: number,
-  max: number
+  max: number,
 ): number | undefined {
   if (value === undefined) {
     return undefined;
   }
 
-  if (
-    typeof value !== "number" ||
-    !Number.isInteger(value) ||
-    value < min ||
-    value > max
-  ) {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < min || value > max) {
     throw new Error(`${field} must be an integer from ${min} to ${max}`);
   }
 
   return value;
 }
 
-function requiredInteger(
-  value: unknown,
-  field: string,
-  min: number,
-  max: number
-): number {
+function requiredInteger(value: unknown, field: string, min: number, max: number): number {
   if (value === undefined) {
     throw new Error(`${field} is required`);
   }
@@ -133,14 +120,9 @@ function validateStartingItems(value: unknown): StartingItem[] | undefined {
         item.material,
         `onPlayerJoin.startingItems.${index}.material`,
         64,
-        MATERIAL_PATTERN
+        MATERIAL_PATTERN,
       ),
-      amount: requiredInteger(
-        item.amount,
-        `onPlayerJoin.startingItems.${index}.amount`,
-        1,
-        64
-      ),
+      amount: requiredInteger(item.amount, `onPlayerJoin.startingItems.${index}.amount`, 1, 64),
     };
   });
 }
@@ -164,19 +146,19 @@ function validatePotionEffects(value: unknown): PotionEffect[] | undefined {
         effect.type,
         `onPlayerJoin.potionEffects.${index}.type`,
         64,
-        MATERIAL_PATTERN
+        MATERIAL_PATTERN,
       ),
       durationTicks: requiredInteger(
         effect.durationTicks,
         `onPlayerJoin.potionEffects.${index}.durationTicks`,
         1,
-        72000
+        72000,
       ),
       amplifier: requiredInteger(
         effect.amplifier,
         `onPlayerJoin.potionEffects.${index}.amplifier`,
         0,
-        255
+        255,
       ),
     };
   });
@@ -192,14 +174,16 @@ const STATEFUL_KEYS = new Set([
 
 function assertStateless(value: unknown, path: string): void {
   if (Array.isArray(value)) {
-    value.forEach((item, i) => assertStateless(item, `${path}[${i}]`));
+    for (const [index, item] of value.entries()) {
+      assertStateless(item, `${path}[${index}]`);
+    }
     return;
   }
   if (!isRecord(value)) return;
   for (const [key, nested] of Object.entries(value)) {
     if (STATEFUL_KEYS.has(key) || /counter/i.test(key)) {
       throw new Error(
-        `Stateful rule field ${path}.${key} is rejected: rules must be stateless or persist through the world`
+        `Stateful rule field ${path}.${key} is rejected: rules must be stateless or persist through the world`,
       );
     }
     assertStateless(nested, `${path}.${key}`);
@@ -217,22 +201,12 @@ export function validatePluginBuilderBody(body: unknown): ValidationResult {
     const metadata = optionalRecord(body.metadata, "metadata");
     const onPlayerJoin = optionalRecord(body.onPlayerJoin, "onPlayerJoin");
     const onPlayerQuit = optionalRecord(body.onPlayerQuit, "onPlayerQuit");
-    const onPlayerAction = optionalRecord(
-      body.onPlayerAction,
-      "onPlayerAction"
-    );
-    const achievement = optionalRecord(
-      onPlayerAction?.achievement,
-      "onPlayerAction.achievement"
-    );
+    const onPlayerAction = optionalRecord(body.onPlayerAction, "onPlayerAction");
+    const achievement = optionalRecord(onPlayerAction?.achievement, "onPlayerAction.achievement");
 
     const pluginName =
-      optionalString(
-        metadata?.pluginName,
-        "metadata.pluginName",
-        64,
-        PLUGIN_NAME_PATTERN
-      ) ?? "FarlandsPlugin";
+      optionalString(metadata?.pluginName, "metadata.pluginName", 64, PLUGIN_NAME_PATTERN) ??
+      "FarlandsPlugin";
 
     const value: PluginBuilderBody = {
       metadata: {
@@ -241,19 +215,19 @@ export function validatePluginBuilderBody(body: unknown): ValidationResult {
           metadata?.minecraftVersion,
           "metadata.minecraftVersion",
           32,
-          MINECRAFT_VERSION_PATTERN
+          MINECRAFT_VERSION_PATTERN,
         ),
       },
       onPlayerJoin: {
         privateMessage: optionalString(
           onPlayerJoin?.privateMessage,
           "onPlayerJoin.privateMessage",
-          500
+          500,
         ),
         broadcastMessage: optionalString(
           onPlayerJoin?.broadcastMessage,
           "onPlayerJoin.broadcastMessage",
-          500
+          500,
         ),
         startingItems: validateStartingItems(onPlayerJoin?.startingItems),
         potionEffects: validatePotionEffects(onPlayerJoin?.potionEffects),
@@ -262,7 +236,7 @@ export function validatePluginBuilderBody(body: unknown): ValidationResult {
         broadcastMessage: optionalString(
           onPlayerQuit?.broadcastMessage,
           "onPlayerQuit.broadcastMessage",
-          500
+          500,
         ),
       },
       onPlayerAction: {
@@ -270,24 +244,20 @@ export function validatePluginBuilderBody(body: unknown): ValidationResult {
           onPlayerAction?.triggerAction,
           "onPlayerAction.triggerAction",
           64,
-          MATERIAL_PATTERN
+          MATERIAL_PATTERN,
         ),
         achievement: {
-          title: optionalString(
-            achievement?.title,
-            "onPlayerAction.achievement.title",
-            100
-          ),
+          title: optionalString(achievement?.title, "onPlayerAction.achievement.title", 100),
           description: optionalString(
             achievement?.description,
             "onPlayerAction.achievement.description",
-            300
+            300,
           ),
           soundEffect: optionalString(
             achievement?.soundEffect,
             "onPlayerAction.achievement.soundEffect",
             64,
-            MATERIAL_PATTERN
+            MATERIAL_PATTERN,
           ),
         },
       },

@@ -15,7 +15,7 @@ export type FormRule = {
 export function buildJson(
   pluginName: string,
   minecraftVersion: string,
-  rules: FormRule[]
+  rules: FormRule[],
 ): PluginBuilderBody {
   const onPlayerJoin: NonNullable<PluginBuilderBody["onPlayerJoin"]> = {
     privateMessage: "",

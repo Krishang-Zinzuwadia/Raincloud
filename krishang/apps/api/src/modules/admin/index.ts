@@ -1,8 +1,8 @@
 import { Elysia } from "elysia";
 
 import { AuthService } from "../auth/service";
-import { ServerService } from "../servers/service";
 import { ServersModel } from "../servers/model";
+import { ServerService } from "../servers/service";
 import { AdminNodesService } from "./nodes";
 
 export const adminModule = new Elysia({ prefix: "/api/admin" })
@@ -34,7 +34,7 @@ export const adminModule = new Elysia({ prefix: "/api/admin" })
         data: await ServerService.performAction(params.serverId, ownerId, body),
       };
     },
-    { body: "servers.action" }
+    { body: "servers.action" },
   )
   .delete("/servers/:serverId", async ({ params }) => {
     const ownerId = await ServerService.getOwnerId(params.serverId);

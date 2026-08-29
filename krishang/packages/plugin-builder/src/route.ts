@@ -1,12 +1,12 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { auth } from "@/lib/auth";
-import { generateYaml } from "@/lib/plugin-builder/yaml-generator";
 import { buildPluginJar } from "@/lib/plugin-builder/jar-builder";
 import { uploadPluginJson } from "@/lib/plugin-builder/s3-storage";
 import {
   MAX_PLUGIN_BUILDER_BODY_BYTES,
   validatePluginBuilderBody,
 } from "@/lib/plugin-builder/validation";
+import { generateYaml } from "@/lib/plugin-builder/yaml-generator";
 
 export const runtime = "nodejs";
 
@@ -21,19 +21,13 @@ export async function POST(request: Request) {
     const contentType = request.headers.get("content-type") ?? "";
 
     if (!contentType.includes("application/json")) {
-      return Response.json(
-        { error: "Content-Type must be application/json" },
-        { status: 415 }
-      );
+      return Response.json({ error: "Content-Type must be application/json" }, { status: 415 });
     }
 
     const contentLength = Number(request.headers.get("content-length") ?? 0);
 
     if (contentLength > MAX_PLUGIN_BUILDER_BODY_BYTES) {
-      return Response.json(
-        { error: "Request body is too large" },
-        { status: 413 }
-      );
+      return Response.json({ error: "Request body is too large" }, { status: 413 });
     }
 
     const session = await auth.api.getSession({
@@ -41,21 +35,13 @@ export async function POST(request: Request) {
     });
 
     if (!session) {
-      return Response.json(
-        { error: "Authentication required" },
-        { status: 401 }
-      );
+      return Response.json({ error: "Authentication required" }, { status: 401 });
     }
 
     const requestText = await request.text();
 
-    if (
-      Buffer.byteLength(requestText, "utf8") > MAX_PLUGIN_BUILDER_BODY_BYTES
-    ) {
-      return Response.json(
-        { error: "Request body is too large" },
-        { status: 413 }
-      );
+    if (Buffer.byteLength(requestText, "utf8") > MAX_PLUGIN_BUILDER_BODY_BYTES) {
+      return Response.json({ error: "Request body is too large" }, { status: 413 });
     }
 
     let parsedBody: unknown;
@@ -85,10 +71,7 @@ export async function POST(request: Request) {
         config: body,
       });
     } catch (s3Error) {
-      console.warn(
-        "Failed to upload plugin metadata to S3 (non-critical):",
-        s3Error
-      );
+      console.warn("Failed to upload plugin metadata to S3 (non-critical):", s3Error);
     }
 
     return new Response(new Uint8Array(jarBuffer), {
@@ -108,7 +91,7 @@ export async function POST(request: Request) {
         success: false,
         error: "Plugin generation failed",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -111,12 +111,8 @@
           "name": "accounts_user_id_users_id_fk",
           "tableFrom": "accounts",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -204,12 +200,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -219,9 +211,7 @@
         "sessions_token_unique": {
           "name": "sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -285,9 +275,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -470,12 +458,8 @@
           "name": "game_servers_user_id_users_id_fk",
           "tableFrom": "game_servers",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -561,12 +545,8 @@
           "name": "server_configs_server_id_game_servers_id_fk",
           "tableFrom": "server_configs",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -576,9 +556,7 @@
         "server_configs_server_id_unique": {
           "name": "server_configs_server_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "server_id"
-          ]
+          "columns": ["server_id"]
         }
       },
       "policies": {},
@@ -677,12 +655,8 @@
           "name": "server_routes_server_id_game_servers_id_fk",
           "tableFrom": "server_routes",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -692,9 +666,7 @@
         "server_routes_server_id_unique": {
           "name": "server_routes_server_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "server_id"
-          ]
+          "columns": ["server_id"]
         }
       },
       "policies": {},
@@ -796,12 +768,8 @@
           "name": "k8s_events_server_id_game_servers_id_fk",
           "tableFrom": "k8s_events",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -897,12 +865,8 @@
           "name": "server_k8s_server_id_game_servers_id_fk",
           "tableFrom": "server_k8s",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -912,9 +876,7 @@
         "server_k8s_server_id_unique": {
           "name": "server_k8s_server_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "server_id"
-          ]
+          "columns": ["server_id"]
         }
       },
       "policies": {},
@@ -1087,12 +1049,8 @@
           "name": "server_jobs_server_id_game_servers_id_fk",
           "tableFrom": "server_jobs",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1100,12 +1058,8 @@
           "name": "server_jobs_depends_on_job_id_server_jobs_id_fk",
           "tableFrom": "server_jobs",
           "tableTo": "server_jobs",
-          "columnsFrom": [
-            "depends_on_job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["depends_on_job_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1215,12 +1169,8 @@
           "name": "backup_logs_backup_id_backups_id_fk",
           "tableFrom": "backup_logs",
           "tableTo": "backups",
-          "columnsFrom": [
-            "backup_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["backup_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1228,12 +1178,8 @@
           "name": "backup_logs_server_id_game_servers_id_fk",
           "tableFrom": "backup_logs",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1358,12 +1304,8 @@
           "name": "backups_server_id_game_servers_id_fk",
           "tableFrom": "backups",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1439,12 +1381,8 @@
           "name": "server_rule_assignments_server_id_game_servers_id_fk",
           "tableFrom": "server_rule_assignments",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1452,12 +1390,8 @@
           "name": "server_rule_assignments_rule_id_server_rules_id_fk",
           "tableFrom": "server_rule_assignments",
           "tableTo": "server_rules",
-          "columnsFrom": [
-            "rule_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["rule_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1553,12 +1487,8 @@
           "name": "server_rules_created_by_users_id_fk",
           "tableFrom": "server_rules",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1643,12 +1573,8 @@
           "name": "user_quotas_user_id_users_id_fk",
           "tableFrom": "user_quotas",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1811,12 +1737,8 @@
           "name": "extensions_owner_id_users_id_fk",
           "tableFrom": "extensions",
           "tableTo": "users",
-          "columnsFrom": [
-            "owner_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["owner_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1892,12 +1814,8 @@
           "name": "server_extensions_server_id_game_servers_id_fk",
           "tableFrom": "server_extensions",
           "tableTo": "game_servers",
-          "columnsFrom": [
-            "server_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["server_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1905,12 +1823,8 @@
           "name": "server_extensions_extension_id_extensions_id_fk",
           "tableFrom": "server_extensions",
           "tableTo": "extensions",
-          "columnsFrom": [
-            "extension_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["extension_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1940,71 +1854,37 @@
     "public.backup_status": {
       "name": "backup_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "in_progress",
-        "completed",
-        "failed",
-        "deleted"
-      ]
+      "values": ["pending", "in_progress", "completed", "failed", "deleted"]
     },
     "public.desired_state": {
       "name": "desired_state",
       "schema": "public",
-      "values": [
-        "ready",
-        "running",
-        "stopped",
-        "deleted"
-      ]
+      "values": ["ready", "running", "stopped", "deleted"]
     },
     "public.extension_source": {
       "name": "extension_source",
       "schema": "public",
-      "values": [
-        "modrinth",
-        "curseforge",
-        "steam_workshop",
-        "user_created"
-      ]
+      "values": ["modrinth", "curseforge", "steam_workshop", "user_created"]
     },
     "public.extension_type": {
       "name": "extension_type",
       "schema": "public",
-      "values": [
-        "plugin",
-        "mod"
-      ]
+      "values": ["plugin", "mod"]
     },
     "public.extension_visibility": {
       "name": "extension_visibility",
       "schema": "public",
-      "values": [
-        "public",
-        "private"
-      ]
+      "values": ["public", "private"]
     },
     "public.game_type": {
       "name": "game_type",
       "schema": "public",
-      "values": [
-        "minecraft",
-        "rust",
-        "cs2"
-      ]
+      "values": ["minecraft", "rust", "cs2"]
     },
     "public.job_status": {
       "name": "job_status",
       "schema": "public",
-      "values": [
-        "queued",
-        "blocked",
-        "processing",
-        "completed",
-        "failed",
-        "exhausted",
-        "cancelled"
-      ]
+      "values": ["queued", "blocked", "processing", "completed", "failed", "exhausted", "cancelled"]
     },
     "public.job_type": {
       "name": "job_type",
@@ -2043,20 +1923,12 @@
     "public.log_level": {
       "name": "log_level",
       "schema": "public",
-      "values": [
-        "info",
-        "warn",
-        "error"
-      ]
+      "values": ["info", "warn", "error"]
     },
     "public.plan": {
       "name": "plan",
       "schema": "public",
-      "values": [
-        "starter",
-        "standard",
-        "pro"
-      ]
+      "values": ["starter", "standard", "pro"]
     },
     "public.server_status": {
       "name": "server_status",

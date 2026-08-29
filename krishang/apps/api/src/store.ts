@@ -1,9 +1,9 @@
 import { randomBytes, randomUUID } from "node:crypto";
 import {
-  hashToken,
   type ApprovalMintResponse,
   type Deployment,
   type DeploymentState,
+  hashToken,
   type Proposal,
   type RuleSetVersion,
   type ServerSummary,
@@ -18,7 +18,7 @@ import {
   sampleRuleSetVersionV2,
   sampleServer,
 } from "@repo/contracts/fixtures";
-import { buildRuleJar, semanticDiff, type PluginBuilderBody } from "@repo/plugin-builder";
+import { buildRuleJar, type PluginBuilderBody } from "@repo/plugin-builder";
 
 const SCRIPT: DeploymentState[] = [
   "building",
@@ -134,7 +134,7 @@ export class Store {
   redeem(
     token: string,
     principal: string,
-    artefactDigest: string
+    artefactDigest: string,
   ): { ok: true; tokenHash: string } | { ok: false; refusal: StructuredRefusal } {
     const tokenHash = hashToken(token);
     const row = this.tokens.get(tokenHash);
@@ -211,7 +211,12 @@ export class Store {
     return version;
   }
 
-  startScriptedDeploy(serverId: string, toVersion: string, initiatedBy: string, tokenHash: string): Deployment {
+  startScriptedDeploy(
+    serverId: string,
+    toVersion: string,
+    initiatedBy: string,
+    tokenHash: string,
+  ): Deployment {
     const id = randomUUID();
     const deployment: Deployment = {
       id,

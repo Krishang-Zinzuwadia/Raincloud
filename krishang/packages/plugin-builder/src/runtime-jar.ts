@@ -1,7 +1,6 @@
 import { get, list } from "@vercel/blob";
 
-const DEFAULT_RUNTIME_JAR_BLOB_PATHNAME =
-  "plugin-builder/runtime/farlands-plugin-1.0.0.jar";
+const DEFAULT_RUNTIME_JAR_BLOB_PATHNAME = "plugin-builder/runtime/farlands-plugin-1.0.0.jar";
 
 function requiredEnv(name: string): string {
   const value = process.env[name];
@@ -34,14 +33,10 @@ export async function getRuntimeJar(): Promise<Buffer> {
       prefix: runtimeJarPathname,
     });
 
-    const foundBlob = response.blobs.find(
-      (b) => b.pathname === runtimeJarPathname
-    );
+    const foundBlob = response.blobs.find((b) => b.pathname === runtimeJarPathname);
 
     if (!foundBlob) {
-      throw new Error(
-        `Runtime jar blob not found for pathname: ${runtimeJarPathname}`
-      );
+      throw new Error(`Runtime jar blob not found for pathname: ${runtimeJarPathname}`);
     }
 
     url = foundBlob.url;

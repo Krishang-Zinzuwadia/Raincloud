@@ -1,7 +1,6 @@
-import { pgTable, text, timestamp, jsonb, index } from "drizzle-orm/pg-core";
-
-import { gameServers } from "./servers";
+import { index, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 import { k8sEventTypeEnum } from "./enums";
+import { gameServers } from "./servers";
 
 export const serverK8s = pgTable("server_k8s", {
   id: text("id").primaryKey(),
@@ -26,9 +25,7 @@ export const serverK8s = pgTable("server_k8s", {
   generatedYaml: text("generated_yaml"),
   yamlGeneratedAt: timestamp("yaml_generated_at", { withTimezone: true }),
 
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 export const k8sEvents = pgTable(
@@ -43,13 +40,11 @@ export const k8sEvents = pgTable(
     message: text("message"),
     reason: text("reason"),
 
-    occurredAt: timestamp("occurred_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    occurredAt: timestamp("occurred_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     index("k8s_events_server_id_idx").on(table.serverId),
     index("k8s_events_type_idx").on(table.type),
     index("k8s_events_occurred_at_idx").on(table.occurredAt),
-  ]
+  ],
 );

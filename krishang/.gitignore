@@ -10,3 +10,11 @@ artefacts
 .DS_Store
 *.log
 apps/mobile/.expo
+
+# Baseline lifts remain byte-for-byte references; current CI lints only E3 additions.
+/apps/api/src/modules/admin/
+/apps/api/src/modules/auth/
+/apps/api/src/modules/rules/
+/apps/api/src/modules/servers/
+/apps/web/lifts/
+/packages/db/

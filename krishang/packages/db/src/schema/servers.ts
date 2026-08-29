@@ -1,13 +1,5 @@
 import { sql } from "drizzle-orm";
-import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-  jsonb,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 import { users } from "./auth";
 import { desiredStateEnum, gameTypeEnum, serverStatusEnum } from "./enums";
@@ -23,9 +15,7 @@ export const gameServers = pgTable(
 
     game: gameTypeEnum("game").notNull(),
 
-    currentState: serverStatusEnum("current_state")
-      .notNull()
-      .default("provisioning"),
+    currentState: serverStatusEnum("current_state").notNull().default("provisioning"),
     desiredState: desiredStateEnum("desired_state").notNull().default("ready"),
     statusMessage: text("status_message"),
     // Foreign key to server_jobs.id is enforced in the initial migration
@@ -33,9 +23,7 @@ export const gameServers = pgTable(
     // schema-dependency between game_servers and server_jobs.
     lastJobId: text("last_job_id"),
 
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow()
@@ -47,7 +35,7 @@ export const gameServers = pgTable(
     uniqueIndex("game_servers_user_active_name_idx")
       .on(table.userId, table.name)
       .where(sql`${table.currentState} <> 'deleted'`),
-  ]
+  ],
 );
 
 export const serverConfigs = pgTable("server_configs", {
@@ -66,9 +54,7 @@ export const serverConfigs = pgTable("server_configs", {
   storageGb: integer("storage_gb").notNull().default(5),
   storageClass: text("storage_class").notNull(),
 
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true })
     .notNull()
     .defaultNow()
@@ -89,9 +75,7 @@ export const serverRoutes = pgTable(
     ip: text("ip"),
     port: integer("port").notNull(),
 
-    createdAt: timestamp("created_at", { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow()
@@ -100,5 +84,5 @@ export const serverRoutes = pgTable(
   (table) => [
     index("server_routes_server_id_idx").on(table.serverId),
     uniqueIndex("server_routes_hostname_idx").on(table.hostname),
-  ]
+  ],
 );

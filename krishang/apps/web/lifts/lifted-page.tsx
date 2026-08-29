@@ -1,11 +1,13 @@
 "use client";
-import { RuleEditor } from "@/components/RuleEditor";
-import { buildJson } from "@/app/api/plugin-builder/json-builder";
-import { Plus, Download, Cpu } from "lucide-react";
+import { Cpu, Download, Plus } from "lucide-react";
 import { useState } from "react";
+import { buildJson } from "@/app/api/plugin-builder/json-builder";
+import { RuleEditor } from "@/components/RuleEditor";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -13,14 +15,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 export default function PluginBuilderPage() {
   const [pluginName, setPluginName] = useState("");
@@ -87,32 +81,20 @@ export default function PluginBuilderPage() {
         if (rule.id !== id) return rule;
         const allowedEvents = getAllowedEvents(newType);
         return { ...rule, type: newType, event: allowedEvents[0].value };
-      })
+      }),
     );
   }
 
   function changeEvent(id: number, newEvent: string) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, event: newEvent } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, event: newEvent } : rule)));
   }
 
   function changeMessage(id: number, newMessage: string) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, message: newMessage } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, message: newMessage } : rule)));
   }
 
   function changeBroadcastMessage(id: number, value: string) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, broadcastMessage: value } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, broadcastMessage: value } : rule)));
   }
 
   function addStarterKitItem(id: number) {
@@ -121,36 +103,25 @@ export default function PluginBuilderPage() {
         rule.id === id
           ? {
               ...rule,
-              starterKitItems: [
-                ...rule.starterKitItems,
-                { material: "BREAD", amount: 1 },
-              ],
+              starterKitItems: [...rule.starterKitItems, { material: "BREAD", amount: 1 }],
             }
-          : rule
-      )
+          : rule,
+      ),
     );
   }
 
-  function changeStarterKitItem(
-    ruleId: number,
-    itemIndex: number,
-    value: string
-  ) {
+  function changeStarterKitItem(ruleId: number, itemIndex: number, value: string) {
     setRules(
       rules.map((rule) => {
         if (rule.id !== ruleId) return rule;
         const newItems = [...rule.starterKitItems];
         newItems[itemIndex] = { ...newItems[itemIndex], material: value };
         return { ...rule, starterKitItems: newItems };
-      })
+      }),
     );
   }
 
-  function changeStarterKitAmount(
-    ruleId: number,
-    itemIndex: number,
-    value: number
-  ) {
+  function changeStarterKitAmount(ruleId: number, itemIndex: number, value: number) {
     setRules(
       rules.map((rule) => {
         if (rule.id !== ruleId) return rule;
@@ -160,7 +131,7 @@ export default function PluginBuilderPage() {
           amount: Math.max(1, value || 1),
         };
         return { ...rule, starterKitItems: newItems };
-      })
+      }),
     );
   }
 
@@ -170,52 +141,30 @@ export default function PluginBuilderPage() {
         if (rule.id !== ruleId) return rule;
         return {
           ...rule,
-          starterKitItems: rule.starterKitItems.filter(
-            (_, i) => i !== itemIndex
-          ),
+          starterKitItems: rule.starterKitItems.filter((_, i) => i !== itemIndex),
         };
-      })
+      }),
     );
   }
 
   function changePotionEffect(id: number, value: string) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, potionEffect: value } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, potionEffect: value } : rule)));
   }
 
   function changeAmplifier(id: number, value: number) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, amplifier: value } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, amplifier: value } : rule)));
   }
 
   function changeDuration(id: number, value: number) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, duration: value } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, duration: value } : rule)));
   }
 
   function changeActionType(id: number, value: string) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, actionType: value } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, actionType: value } : rule)));
   }
 
   function changeActionAmount(id: number, value: number) {
-    setRules(
-      rules.map((rule) =>
-        rule.id === id ? { ...rule, actionAmount: value } : rule
-      )
-    );
+    setRules(rules.map((rule) => (rule.id === id ? { ...rule, actionAmount: value } : rule)));
   }
 
   function getAllowedEvents(ruleType: string) {
@@ -250,8 +199,7 @@ export default function PluginBuilderPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(buildJson(pluginName, minecraftVersion, rules)),
       });
-      if (!response.ok)
-        throw new Error(`Compilation failed (HTTP ${response.status})`);
+      if (!response.ok) throw new Error(`Compilation failed (HTTP ${response.status})`);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -261,9 +209,7 @@ export default function PluginBuilderPage() {
       URL.revokeObjectURL(url);
       setGenerateStatus("Build successful. Download started.");
     } catch (err) {
-      setGenerateStatus(
-        err instanceof Error ? err.message : "Compilation failed."
-      );
+      setGenerateStatus(err instanceof Error ? err.message : "Compilation failed.");
     } finally {
       setIsGenerating(false);
     }
@@ -292,9 +238,7 @@ export default function PluginBuilderPage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 border border-primary/20 backdrop-blur-md">
               <Cpu className="h-5 w-5 text-primary" />
             </div>
-            <h1 className="text-3xl font-bold tracking-tight text-white">
-              Plugin Builder
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight text-white">Plugin Builder</h1>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
             Visually build Minecraft plugins and export production-ready{" "}
@@ -311,19 +255,14 @@ export default function PluginBuilderPage() {
       {/* Plugin Configuration Card */}
       <Card className="glass-card">
         <CardHeader className="pb-4">
-          <CardTitle className="text-white text-base font-semibold">
-            Plugin Configuration
-          </CardTitle>
+          <CardTitle className="text-white text-base font-semibold">Plugin Configuration</CardTitle>
           <CardDescription className="text-muted-foreground text-sm">
             Set the name and target Minecraft version for your plugin.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <Label
-              htmlFor="plugin-name"
-              className="text-sm text-white/80 font-medium"
-            >
+            <Label htmlFor="plugin-name" className="text-sm text-white/80 font-medium">
               Plugin Name
             </Label>
             <Input
@@ -336,18 +275,11 @@ export default function PluginBuilderPage() {
               placeholder="e.g. MyAwesomePlugin"
               className="border-white/10 bg-white/5 placeholder:text-muted-foreground"
             />
-            {nameError && (
-              <p className="text-xs text-destructive">{nameError}</p>
-            )}
+            {nameError && <p className="text-xs text-destructive">{nameError}</p>}
           </div>
           <div className="space-y-2">
-            <Label className="text-sm text-white/80 font-medium">
-              Minecraft Version
-            </Label>
-            <Select
-              value={minecraftVersion}
-              onValueChange={setMinecraftVersion}
-            >
+            <Label className="text-sm text-white/80 font-medium">Minecraft Version</Label>
+            <Select value={minecraftVersion} onValueChange={setMinecraftVersion}>
               <SelectTrigger className="border-white/10 bg-white/5">
                 <SelectValue placeholder="Select version" />
               </SelectTrigger>
@@ -365,9 +297,7 @@ export default function PluginBuilderPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-white tracking-tight">
-              Rules
-            </h2>
+            <h2 className="text-xl font-semibold text-white tracking-tight">Rules</h2>
             <p className="text-xs text-muted-foreground mt-0.5">
               Define what your plugin does in response to game events.
             </p>
@@ -389,9 +319,8 @@ export default function PluginBuilderPage() {
               </div>
               <p className="text-base font-medium text-white">No rules yet</p>
               <p className="text-sm text-muted-foreground mt-1 max-w-xs">
-                Click{" "}
-                <span className="text-primary font-semibold">Add Rule</span> to
-                define your first plugin behaviour.
+                Click <span className="text-primary font-semibold">Add Rule</span> to define your
+                first plugin behaviour.
               </p>
             </CardContent>
           </Card>
@@ -420,9 +349,7 @@ export default function PluginBuilderPage() {
       {/* Actions Card */}
       <Card className="glass-card">
         <CardHeader className="pb-3">
-          <CardTitle className="text-white text-base font-semibold">
-            Export
-          </CardTitle>
+          <CardTitle className="text-white text-base font-semibold">Export</CardTitle>
           <CardDescription className="text-muted-foreground text-sm">
             Download the compiled plugin or the raw JSON config.
           </CardDescription>

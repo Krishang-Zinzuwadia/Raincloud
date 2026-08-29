@@ -9,11 +9,11 @@ function items(items?: { material: string; amount: number }[]): string {
   return (items ?? []).map((i) => `${i.material} x${i.amount}`).join(", ");
 }
 
-function effects(
-  effects?: { type: string; durationTicks: number; amplifier: number }[]
-): string {
+function effects(effects?: { type: string; durationTicks: number; amplifier: number }[]): string {
   return (effects ?? [])
-    .map((effect) => `${effect.type} level ${effect.amplifier + 1} for ${effect.durationTicks} ticks`)
+    .map(
+      (effect) => `${effect.type} level ${effect.amplifier + 1} for ${effect.durationTicks} ticks`,
+    )
     .join(", ");
 }
 
@@ -23,38 +23,42 @@ export function semanticDiff(from: PluginBuilderBody, to: PluginBuilderBody): st
     line(
       "join private message",
       from.onPlayerJoin?.privateMessage ?? "",
-      to.onPlayerJoin?.privateMessage ?? ""
+      to.onPlayerJoin?.privateMessage ?? "",
     ),
     line(
       "join broadcast",
       from.onPlayerJoin?.broadcastMessage ?? "",
-      to.onPlayerJoin?.broadcastMessage ?? ""
+      to.onPlayerJoin?.broadcastMessage ?? "",
     ),
-    line("join starting items", items(from.onPlayerJoin?.startingItems), items(to.onPlayerJoin?.startingItems)),
+    line(
+      "join starting items",
+      items(from.onPlayerJoin?.startingItems),
+      items(to.onPlayerJoin?.startingItems),
+    ),
     line(
       "join potion effects",
       effects(from.onPlayerJoin?.potionEffects),
-      effects(to.onPlayerJoin?.potionEffects)
+      effects(to.onPlayerJoin?.potionEffects),
     ),
     line(
       "quit broadcast",
       from.onPlayerQuit?.broadcastMessage ?? "",
-      to.onPlayerQuit?.broadcastMessage ?? ""
+      to.onPlayerQuit?.broadcastMessage ?? "",
     ),
     line(
       "action trigger",
       from.onPlayerAction?.triggerAction ?? "",
-      to.onPlayerAction?.triggerAction ?? ""
+      to.onPlayerAction?.triggerAction ?? "",
     ),
     line(
       "achievement title",
       from.onPlayerAction?.achievement?.title ?? "",
-      to.onPlayerAction?.achievement?.title ?? ""
+      to.onPlayerAction?.achievement?.title ?? "",
     ),
     line(
       "achievement description",
       from.onPlayerAction?.achievement?.description ?? "",
-      to.onPlayerAction?.achievement?.description ?? ""
+      to.onPlayerAction?.achievement?.description ?? "",
     ),
   ];
   return lines.filter((value): value is string => value !== null);

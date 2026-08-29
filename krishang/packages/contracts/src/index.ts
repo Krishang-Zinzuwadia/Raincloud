@@ -1,4 +1,4 @@
-import { Type, type Static } from "@sinclair/typebox";
+import { type Static, Type } from "@sinclair/typebox";
 
 /** Rule documents are validated by plugin-builder/validation.ts, not re-derived here. */
 export const RuleDocument = Type.Unknown({

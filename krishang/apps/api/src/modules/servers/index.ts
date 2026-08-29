@@ -46,7 +46,7 @@ export const serversModule = new Elysia({ prefix: "/api/servers" })
 
     const servers = await ServerService.getInternalServers(
       query.game as string | undefined,
-      query.status as string | undefined
+      query.status as string | undefined,
     );
 
     return { success: true, data: servers };
@@ -74,7 +74,7 @@ export const serversModule = new Elysia({ prefix: "/api/servers" })
       const result = await ServerService.performAction(serverId, userId, body);
       return { success: true, data: result };
     },
-    { body: "servers.action" }
+    { body: "servers.action" },
   )
   .post(
     "/create",
@@ -89,19 +89,15 @@ export const serversModule = new Elysia({ prefix: "/api/servers" })
     },
     {
       body: "server.create",
-    }
+    },
   )
   .patch(
     "/:serverId/config",
     async ({ userId, params: { serverId }, body }) => {
-      const result = await ServerService.updateServerConfig(
-        serverId,
-        userId,
-        body
-      );
+      const result = await ServerService.updateServerConfig(serverId, userId, body);
       return { success: true, data: result };
     },
-    { body: "server.update" }
+    { body: "server.update" },
   )
   .delete("/:serverId", async ({ userId, params: { serverId }, set }) => {
     const result = await ServerService.delete(userId, serverId);

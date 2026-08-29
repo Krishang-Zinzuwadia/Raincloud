@@ -17,7 +17,7 @@ const baseServerSchema = z.object({
     .max(16)
     .regex(
       /^\d{1,2}\.\d{1,2}(?:\.\d{1,2})?$/,
-      "version must be an explicit Minecraft release (for example, 1.21.4)"
+      "version must be an explicit Minecraft release (for example, 1.21.4)",
     ),
   cpuCores: z.coerce.number().int().min(1).max(16),
   ramMb: z.coerce.number().int().min(512).max(32768),
@@ -28,18 +28,14 @@ const baseServerSchema = z.object({
 const minecraftSchema = baseServerSchema
   .extend({
     game: z.literal("minecraft"),
-    type: z
-      .enum(["vanilla", "paper", "fabric", "forge", "purpur"])
-      .default("vanilla"),
+    type: z.enum(["vanilla", "paper", "fabric", "forge", "purpur"]).default("vanilla"),
     gameConfigJson: z
       .object({
         loaderVersion: z.string().optional(),
 
         seed: z.string().max(32).optional(),
         maxPlayers: z.number().min(1).max(100).default(20),
-        difficulty: z
-          .enum(["peaceful", "easy", "normal", "hard"])
-          .default("normal"),
+        difficulty: z.enum(["peaceful", "easy", "normal", "hard"]).default("normal"),
         pvp: z.boolean().default(true),
         motd: z.string().max(100).optional(),
       })
@@ -51,10 +47,7 @@ const minecraftSchema = baseServerSchema
   })
   .superRefine((data, ctx) => {
     // If the server type is fabric or forge, loaderVersion becomes required
-    if (
-      ["fabric", "forge"].includes(data.type) &&
-      !data.gameConfigJson.loaderVersion
-    ) {
+    if (["fabric", "forge"].includes(data.type) && !data.gameConfigJson.loaderVersion) {
       ctx.addIssue({
         code: "custom",
         message: `A loaderVersion is strictly required when using ${data.type}`,

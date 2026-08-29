@@ -1,28 +1,19 @@
+import type * as k8s from "@kubernetes/client-node";
+import { gameServers, serverConfigs, serverK8s, serverRoutes, userQuotas } from "@repo/db";
 import { and, desc, eq, inArray, ne } from "drizzle-orm";
 import { status } from "elysia";
-import * as k8s from "@kubernetes/client-node";
-import { db, TransactionType } from "../../db";
+import { db, type TransactionType } from "../../db";
+import { deleteGameServer, provisionGameServer } from "../provisioning";
+import { makeKubernetesClients, waitForDeploymentReplicasReady } from "../provisioning/kubernetes";
+import { calculateContainerMemory } from "../provisioning/utils";
+import { QuotaService } from "../quota/quota.service";
 import {
-  gameServers,
-  serverConfigs,
-  serverRoutes,
-  serverK8s,
-  userQuotas,
-} from "@repo/db";
-import {
-  serverActionDto,
-  CreateServerInput,
+  type CreateServerInput,
   type ServerActionInput,
+  serverActionDto,
   type UpdateServerConfigInput,
 } from "./model";
-import { QuotaService } from "../quota/quota.service";
-import { deleteGameServer, provisionGameServer } from "../provisioning";
-import {
-  makeKubernetesClients,
-  waitForDeploymentReplicasReady,
-} from "../provisioning/kubernetes";
 import { getMinecraftRouteHostname } from "./routing";
-import { calculateContainerMemory } from "../provisioning/utils";
 
 const ACTIVE_SERVER_NAME_INDEX = "game_servers_user_active_name_idx";
 
@@ -56,10 +47,7 @@ function buildRandomFallbackServerName(prefix: string): string {
   return `${prefix}-${slug}`.slice(0, 50);
 }
 
-function buildRestoredServerName(
-  originalName: string,
-  serverId: string
-): string {
+function buildRestoredServerName(originalName: string, serverId: string): string {
   const suffix = serverId.slice(0, 8);
   const restoredName = `${originalName}-restore-${suffix}`;
 
@@ -71,10 +59,7 @@ function buildRestoredServerName(
   return `${originalName.slice(0, Math.max(prefixLength, 1))}-restore-${suffix}`;
 }
 
-function buildRestoreNameCandidates(
-  originalName: string,
-  serverId: string
-): string[] {
+function buildRestoreNameCandidates(originalName: string, serverId: string): string[] {
   return [
     originalName,
     buildRestoredServerName(originalName, serverId),
@@ -86,7 +71,7 @@ function buildRestoreNameCandidates(
 async function restoreServerAfterFailedDeletion(
   serverId: string,
   previousState: StateType,
-  previousDesiredState: DesiredStateType
+  previousDesiredState: DesiredStateType,
 ) {
   const [server] = await db
     .select({ name: gameServers.name })
@@ -149,7 +134,7 @@ async function restoreServerAfterFailedDeletion(
 
   throw status(
     500,
-    "Failed to restore server state after an incomplete delete. Please contact support."
+    "Failed to restore server state after an incomplete delete. Please contact support.",
   );
 }
 
@@ -165,10 +150,7 @@ function getAppsApi(): k8s.AppsV1Api {
     return cachedAppsApi;
   } catch (err) {
     console.error("Failed to load Kubernetes client config:", err);
-    throw status(
-      503,
-      "Kubernetes is not reachable right now. Please try again later."
-    );
+    throw status(503, "Kubernetes is not reachable right now. Please try again later.");
   }
 }
 
@@ -185,10 +167,7 @@ type ServerState =
 
 type DesiredServerState = "ready" | "running" | "stopped" | "deleted";
 
-const VALID_FROM_STATES: Record<
-  ServerActionInput["action"],
-  readonly ServerState[]
-> = {
+const VALID_FROM_STATES: Record<ServerActionInput["action"], readonly ServerState[]> = {
   start: ["stopped", "ready", "failed"] as const,
   stop: ["running", "starting", "failed"] as const,
   restart: ["running"] as const,
@@ -224,12 +203,7 @@ const VALID_STATES = [
   "restarting",
   "failed",
 ] as const;
-const VALID_DESIRED_STATES = [
-  "ready",
-  "running",
-  "stopped",
-  "deleted",
-] as const;
+const VALID_DESIRED_STATES = ["ready", "running", "stopped", "deleted"] as const;
 type GameType = (typeof VALID_GAMES)[number];
 type StateType = (typeof VALID_STATES)[number];
 type DesiredStateType = (typeof VALID_DESIRED_STATES)[number];
@@ -259,12 +233,7 @@ export abstract class ServerService {
       .from(gameServers)
       .leftJoin(serverConfigs, eq(serverConfigs.serverId, gameServers.id))
       .innerJoin(serverRoutes, eq(serverRoutes.serverId, gameServers.id))
-      .where(
-        and(
-          eq(gameServers.userId, userId),
-          ne(gameServers.currentState, "deleted")
-        )
-      )
+      .where(and(eq(gameServers.userId, userId), ne(gameServers.currentState, "deleted")))
       .orderBy(desc(gameServers.createdAt));
   }
 
@@ -293,10 +262,7 @@ export abstract class ServerService {
   static async getOwnerId(serverId: string) {
     const server = await db.query.gameServers.findFirst({
       columns: { userId: true },
-      where: and(
-        eq(gameServers.id, serverId),
-        ne(gameServers.currentState, "deleted")
-      ),
+      where: and(eq(gameServers.id, serverId), ne(gameServers.currentState, "deleted")),
     });
 
     if (!server) throw status(404, "Server not found");
@@ -318,9 +284,7 @@ export abstract class ServerService {
   }
 
   static async getInternalServers(game?: string, status?: string) {
-    const validGame = VALID_GAMES.includes(game as GameType)
-      ? (game as GameType)
-      : undefined;
+    const validGame = VALID_GAMES.includes(game as GameType) ? (game as GameType) : undefined;
     const validState = status
       ? VALID_STATES.includes(status as StateType)
         ? (status as StateType)
@@ -342,15 +306,12 @@ export abstract class ServerService {
       .innerJoin(serverRoutes, eq(serverRoutes.serverId, gameServers.id))
       .where(
         validGame && validState
-          ? and(
-              eq(gameServers.game, validGame),
-              eq(gameServers.currentState, validState)
-            )
+          ? and(eq(gameServers.game, validGame), eq(gameServers.currentState, validState))
           : validGame
             ? eq(gameServers.game, validGame)
             : validState
               ? eq(gameServers.currentState, validState)
-              : undefined
+              : undefined,
       );
   }
 
@@ -358,15 +319,14 @@ export abstract class ServerService {
     const k8sRecord = await db.query.serverK8s.findFirst({
       where: eq(serverK8s.serverId, serverId),
     });
-    if (!k8sRecord)
-      throw status(404, "Server has no associated Kubernetes resources");
+    if (!k8sRecord) throw status(404, "Server has no associated Kubernetes resources");
     return k8sRecord;
   }
 
   private static async claimTransition(
     userId: string,
     serverId: string,
-    action: ServerActionInput["action"]
+    action: ServerActionInput["action"],
   ) {
     const validStates = VALID_FROM_STATES[action];
     const targetState = TARGET_STATE[action];
@@ -383,8 +343,8 @@ export abstract class ServerService {
         and(
           eq(gameServers.id, serverId),
           eq(gameServers.userId, userId),
-          inArray(gameServers.currentState, validStates)
-        )
+          inArray(gameServers.currentState, validStates),
+        ),
       )
       .returning({
         currentState: gameServers.currentState,
@@ -400,17 +360,14 @@ export abstract class ServerService {
 
     if (!exists) throw status(404, "Server not found");
 
-    throw status(
-      409,
-      `Cannot ${action} server: it is not in a valid state for this action`
-    );
+    throw status(409, `Cannot ${action} server: it is not in a valid state for this action`);
   }
 
   private static async setReplicas(
     appsApi: k8s.AppsV1Api,
     deploymentName: string,
     namespace: string,
-    replicas: number
+    replicas: number,
   ) {
     return appsApi.patchNamespacedDeployment({
       name: deploymentName,
@@ -420,10 +377,7 @@ export abstract class ServerService {
     });
   }
 
-  private static async triggerRollingRestart(
-    deploymentName: string,
-    namespace: string
-  ) {
+  private static async triggerRollingRestart(deploymentName: string, namespace: string) {
     const appsApi = getAppsApi();
     await appsApi.patchNamespacedDeployment({
       name: deploymentName,
@@ -444,7 +398,7 @@ export abstract class ServerService {
   private static async settleState(
     serverId: string,
     currentState: "running" | "stopped",
-    desiredState: "running" | "stopped"
+    desiredState: "running" | "stopped",
   ) {
     await db
       .update(gameServers)
@@ -457,7 +411,7 @@ export abstract class ServerService {
     previousState: {
       currentState: ServerState;
       desiredState: DesiredServerState;
-    }
+    },
   ) {
     try {
       await db
@@ -469,10 +423,7 @@ export abstract class ServerService {
         })
         .where(eq(gameServers.id, serverId));
     } catch (updateErr) {
-      console.error(
-        `[${serverId}] Failed to roll back to previous state:`,
-        updateErr
-      );
+      console.error(`[${serverId}] Failed to roll back to previous state:`, updateErr);
     }
   }
 
@@ -494,7 +445,7 @@ export abstract class ServerService {
     deploymentName: string,
     namespace: string,
     cpuCores: string,
-    ramMb: number
+    ramMb: number,
   ) {
     const appsApi = getAppsApi();
     const containerMemory = calculateContainerMemory(ramMb);
@@ -515,15 +466,14 @@ export abstract class ServerService {
   private static async patchConfigMap(
     configMapName: string,
     namespace: string,
-    gameConfigJson: NonNullable<UpdateServerConfigInput["gameConfigJson"]>
+    gameConfigJson: NonNullable<UpdateServerConfigInput["gameConfigJson"]>,
   ) {
     const coreApi = makeKubernetesClients().core;
     const data: Record<string, string> = {};
 
     if (gameConfigJson.maxPlayers !== undefined)
       data.MAX_PLAYERS = String(gameConfigJson.maxPlayers);
-    if (gameConfigJson.difficulty !== undefined)
-      data.DIFFICULTY = gameConfigJson.difficulty;
+    if (gameConfigJson.difficulty !== undefined) data.DIFFICULTY = gameConfigJson.difficulty;
     if (gameConfigJson.pvp !== undefined) data.PVP = String(gameConfigJson.pvp);
     if (gameConfigJson.motd !== undefined) data.MOTD = gameConfigJson.motd;
     if (gameConfigJson.seed !== undefined) data.SEED = gameConfigJson.seed;
@@ -542,41 +492,9 @@ export abstract class ServerService {
     });
   }
 
-  private static async patchPvcSize(
-    pvcName: string,
-    namespace: string,
-    storageGb: number
-  ) {
-    // TODO: confirm farlands-gp3 has allowVolumeExpansion: true before enabling.
-    // Contributor role lacks permission to check storageclass — needs cluster-admin.
-    throw new Error(
-      "Storage size increases are not yet supported. Contact an admin."
-    );
-
-    const kc = new k8s.KubeConfig();
-    if (process.env.KUBERNETES_SERVICE_HOST) {
-      kc.loadFromCluster();
-    } else {
-      kc.loadFromDefault();
-    }
-    const coreApi = kc.makeApiClient(k8s.CoreV1Api);
-    return coreApi.patchNamespacedPersistentVolumeClaim({
-      name: pvcName,
-      namespace,
-      body: {
-        spec: { resources: { requests: { storage: `${storageGb}Gi` } } },
-      },
-      fieldManager: "farlands-backend",
-    });
-  }
-
-  static async updateServerConfig(
-    serverId: string,
-    userId: string,
-    data: UpdateServerConfigInput
-  ) {
-    await this.requireOwnership(userId, serverId);
-    const k8sRecord = await this.getK8sRecord(serverId);
+  static async updateServerConfig(serverId: string, userId: string, data: UpdateServerConfigInput) {
+    await ServerService.requireOwnership(userId, serverId);
+    const k8sRecord = await ServerService.getK8sRecord(serverId);
 
     // Snapshot current config — needed to revert if K8s patch fails.
     const [previousConfig] = await db
@@ -595,7 +513,7 @@ export abstract class ServerService {
     if (newStorageGb < previousConfig.storageGb) {
       throw status(
         400,
-        `Storage cannot be reduced. Current size is ${previousConfig.storageGb}GB.`
+        `Storage cannot be reduced. Current size is ${previousConfig.storageGb}GB.`,
       );
     }
 
@@ -613,19 +531,19 @@ export abstract class ServerService {
     if (newCpuCores > Number(quotaRow.cpuLimit)) {
       throw status(
         403,
-        `CPU limit exceeded. Your plan allows ${quotaRow.cpuLimit} cores per server.`
+        `CPU limit exceeded. Your plan allows ${quotaRow.cpuLimit} cores per server.`,
       );
     }
     if (newRamMb > quotaRow.ramLimitMb) {
       throw status(
         403,
-        `RAM limit exceeded. Your plan allows ${quotaRow.ramLimitMb}MB per server.`
+        `RAM limit exceeded. Your plan allows ${quotaRow.ramLimitMb}MB per server.`,
       );
     }
     if (newStorageGb > quotaRow.storageLimitGb) {
       throw status(
         403,
-        `Storage limit exceeded. Your plan allows ${quotaRow.storageLimitGb}GB per server.`
+        `Storage limit exceeded. Your plan allows ${quotaRow.storageLimitGb}GB per server.`,
       );
     }
 
@@ -648,34 +566,28 @@ export abstract class ServerService {
     // Apply to K8s. If anything fails, revert the DB write above.
     try {
       if (data.cpuCores !== undefined || data.ramMb !== undefined) {
-        await this.patchDeploymentResources(
+        await ServerService.patchDeploymentResources(
           k8sRecord.deploymentName,
           k8sRecord.namespace,
           String(newCpuCores),
-          newRamMb
+          newRamMb,
         );
       }
 
       if (data.gameConfigJson !== undefined) {
-        await this.patchConfigMap(
+        await ServerService.patchConfigMap(
           `cm-server-${serverId}`,
           k8sRecord.namespace,
-          data.gameConfigJson
+          data.gameConfigJson,
         );
       }
 
       // Trigger rolling restart so config changes take effect without manual intervention.
-      await this.triggerRollingRestart(
-        k8sRecord.deploymentName,
-        k8sRecord.namespace
-      );
+      await ServerService.triggerRollingRestart(k8sRecord.deploymentName, k8sRecord.namespace);
 
       return { success: true, message: "Server configuration updated" };
     } catch (error) {
-      console.error(
-        `[${serverId}] K8s config patch failed, reverting server_configs:`,
-        error
-      );
+      console.error(`[${serverId}] K8s config patch failed, reverting server_configs:`, error);
 
       // Revert DB to the snapshot taken before the update.
       await db
@@ -693,13 +605,9 @@ export abstract class ServerService {
     }
   }
 
-  static async performAction(
-    serverId: string,
-    userId: string,
-    data: ServerActionInput
-  ) {
+  static async performAction(serverId: string, userId: string, data: ServerActionInput) {
     const { action } = serverActionDto.parse(data);
-    let previousState = await this.requireOwnership(userId, serverId);
+    let previousState = await ServerService.requireOwnership(userId, serverId);
 
     if (
       previousState.currentState === "restarting" &&
@@ -711,69 +619,56 @@ export abstract class ServerService {
       // deciding whether a new power action is valid.
       const { BackupService } = await import("../backup/service");
       await BackupService.reconcileServerOperations(serverId);
-      previousState = await this.requireOwnership(userId, serverId);
+      previousState = await ServerService.requireOwnership(userId, serverId);
     }
 
     // Validate quota before claiming the transition if reactivating a failed server.
     // Failed servers are excluded from quota, so restoring them requires validation.
-    if (
-      (action === "restart" || action === "start") &&
-      previousState.currentState === "failed"
-    ) {
+    if ((action === "restart" || action === "start") && previousState.currentState === "failed") {
       await QuotaService.validateRestartQuota(userId, serverId);
     }
 
-    await this.claimTransition(userId, serverId, action);
+    await ServerService.claimTransition(userId, serverId, action);
 
-    const k8sRecord = await this.getK8sRecord(serverId);
+    const k8sRecord = await ServerService.getK8sRecord(serverId);
     const { deploymentName, namespace } = k8sRecord;
     const appsApi = getAppsApi();
 
     if (action === "restart") {
       let scaledDown = false;
       try {
-        await this.setReplicas(appsApi, deploymentName, namespace, 0);
+        await ServerService.setReplicas(appsApi, deploymentName, namespace, 0);
         scaledDown = true;
 
-        await waitForDeploymentReplicasReady(
-          appsApi,
-          deploymentName,
-          namespace,
-          0
-        );
+        await waitForDeploymentReplicasReady(appsApi, deploymentName, namespace, 0);
 
-        await this.setReplicas(appsApi, deploymentName, namespace, 1);
+        await ServerService.setReplicas(appsApi, deploymentName, namespace, 1);
         await db
           .update(gameServers)
           .set({ currentState: "starting", updatedAt: new Date() })
           .where(eq(gameServers.id, serverId));
 
-        await waitForDeploymentReplicasReady(
-          appsApi,
-          deploymentName,
-          namespace,
-          1
-        );
-        await this.settleState(serverId, "running", "running");
+        await waitForDeploymentReplicasReady(appsApi, deploymentName, namespace, 1);
+        await ServerService.settleState(serverId, "running", "running");
 
         return { success: true, action, status: "running" };
       } catch (err) {
         console.error(`[${serverId}] Failed to perform ${action}:`, err);
 
         if (!scaledDown) {
-          await this.rollbackToPreviousState(serverId, previousState);
+          await ServerService.rollbackToPreviousState(serverId, previousState);
           throw status(500, `Failed to ${action} server`);
         }
 
         try {
-          await this.setReplicas(appsApi, deploymentName, namespace, 0);
+          await ServerService.setReplicas(appsApi, deploymentName, namespace, 0);
         } catch (compensateErr) {
           console.error(
             `[${serverId}] Failed to compensate with scale-down after restart error:`,
-            compensateErr
+            compensateErr,
           );
         }
-        await this.rollbackToStopped(serverId);
+        await ServerService.rollbackToStopped(serverId);
         throw status(500, `Failed to ${action} server`);
       }
     }
@@ -783,14 +678,9 @@ export abstract class ServerService {
     const finalState = action === "start" ? "running" : "stopped";
 
     try {
-      await this.setReplicas(appsApi, deploymentName, namespace, replicas);
-      await waitForDeploymentReplicasReady(
-        appsApi,
-        deploymentName,
-        namespace,
-        replicas
-      );
-      await this.settleState(serverId, finalState, finalState);
+      await ServerService.setReplicas(appsApi, deploymentName, namespace, replicas);
+      await waitForDeploymentReplicasReady(appsApi, deploymentName, namespace, replicas);
+      await ServerService.settleState(serverId, finalState, finalState);
 
       return { success: true, action, status: finalState };
     } catch (err) {
@@ -803,13 +693,13 @@ export abstract class ServerService {
         });
         const liveReplicas = deployment.status?.readyReplicas ?? 0;
         const liveState = liveReplicas > 0 ? "running" : "stopped";
-        await this.settleState(serverId, liveState, liveState);
+        await ServerService.settleState(serverId, liveState, liveState);
       } catch (reconcileErr) {
         console.error(
           `[${serverId}] Failed to reconcile live K8s state after ${action} error:`,
-          reconcileErr
+          reconcileErr,
         );
-        await this.rollbackToPreviousState(serverId, previousState);
+        await ServerService.rollbackToPreviousState(serverId, previousState);
       }
 
       throw status(500, `Failed to ${action} server`);
@@ -817,8 +707,8 @@ export abstract class ServerService {
   }
 
   static async getStatus(serverId: string, userId: string) {
-    const server = await this.requireOwnership(userId, serverId);
-    const k8sRecord = await this.getK8sRecord(serverId);
+    const server = await ServerService.requireOwnership(userId, serverId);
+    const k8sRecord = await ServerService.getK8sRecord(serverId);
 
     let liveReplicas: number | null = null;
     try {
@@ -829,10 +719,7 @@ export abstract class ServerService {
       });
       liveReplicas = deployment.status?.readyReplicas ?? 0;
     } catch (err) {
-      console.error(
-        `[${serverId}] Failed to read live deployment status:`,
-        err
-      );
+      console.error(`[${serverId}] Failed to read live deployment status:`, err);
     }
 
     return {
@@ -859,25 +746,22 @@ export abstract class ServerService {
         if (projectedServers > quota.serversLimit) {
           throw status(
             403,
-            `Server limit exceeded. Your plan allows ${quota.serversLimit} servers.`
+            `Server limit exceeded. Your plan allows ${quota.serversLimit} servers.`,
           );
         }
         if (data.cpuCores > Number(quota.cpuLimit)) {
           throw status(
             403,
-            `CPU limit exceeded. You have ${Number(quota.cpuLimit)} cores available.`
+            `CPU limit exceeded. You have ${Number(quota.cpuLimit)} cores available.`,
           );
         }
         if (data.ramMb > quota.ramLimitMb) {
-          throw status(
-            403,
-            `RAM limit exceeded. You have ${quota.ramLimitMb}MB available.`
-          );
+          throw status(403, `RAM limit exceeded. You have ${quota.ramLimitMb}MB available.`);
         }
         if (data.storageGb > quota.storageLimitGb) {
           throw status(
             403,
-            `Storage limit exceeded. You have ${quota.storageLimitGb}GB available.`
+            `Storage limit exceeded. You have ${quota.storageLimitGb}GB available.`,
           );
         }
 
@@ -912,9 +796,7 @@ export abstract class ServerService {
         });
 
         //TODO: Log server creation
-        console.info(
-          `[${serverId}] Initial database records created for new game server`
-        );
+        console.info(`[${serverId}] Initial database records created for new game server`);
       });
     } catch (error) {
       if (isActiveNameConflict(error)) {
@@ -955,21 +837,13 @@ export abstract class ServerService {
           desiredState: gameServers.desiredState,
         })
         .from(gameServers)
-        .where(
-          and(eq(gameServers.id, serverId), eq(gameServers.userId, userId))
-        )
+        .where(and(eq(gameServers.id, serverId), eq(gameServers.userId, userId)))
         .for("update");
 
       if (!server) throw status(404, "Server not found");
 
-      if (
-        server.currentState === "deleted" ||
-        server.currentState === "provisioning"
-      ) {
-        throw status(
-          409,
-          `Cannot delete server in state: ${server.currentState}`
-        );
+      if (server.currentState === "deleted" || server.currentState === "provisioning") {
+        throw status(409, `Cannot delete server in state: ${server.currentState}`);
       }
       previousState = server.currentState;
       previousDesiredState = server.desiredState;
@@ -1006,11 +880,7 @@ export abstract class ServerService {
     } catch (error) {
       console.error(`[${serverId}] Deletion process failed:`, error);
 
-      await restoreServerAfterFailedDeletion(
-        serverId,
-        previousState!,
-        previousDesiredState!
-      );
+      await restoreServerAfterFailedDeletion(serverId, previousState!, previousDesiredState!);
 
       throw status(500, "Failed to fully delete server resources.");
     }

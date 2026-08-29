@@ -1,6 +1,6 @@
-import { Elysia, t } from "elysia";
-import { z } from "zod";
 import { gameTypeEnum } from "@repo/db";
+import { Elysia } from "elysia";
+import { z } from "zod";
 
 export const ruleDto = z.object({
   name: z.string().min(3),
@@ -13,8 +13,7 @@ export const ruleDto = z.object({
 export type RuleCreateInput = z.infer<typeof ruleDto>;
 export type RuleUpdateInput = Partial<RuleCreateInput>;
 
-export const RulesModel = new Elysia({ name: "rules.model" })
-  .model({
-    "rules.create": ruleDto,
-    "rules.update": ruleDto.partial(),
-  });
+export const RulesModel = new Elysia({ name: "rules.model" }).model({
+  "rules.create": ruleDto,
+  "rules.update": ruleDto.partial(),
+});

@@ -1,9 +1,4 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  integer,
-} from "drizzle-orm/pg-core";
+import { integer, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 import { users } from "./auth";
 import { planEnum } from "./enums";
@@ -22,5 +17,8 @@ export const userQuotas = pgTable("user_quotas", {
   backupsLimit: integer("backups_limit").notNull().default(3),
 
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
 });

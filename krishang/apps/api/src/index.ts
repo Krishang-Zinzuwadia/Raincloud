@@ -3,25 +3,20 @@ import {
   ApprovalMintRequest,
   AuthorRulesRequest,
   DeployRequest,
+  hashToken,
   PreviewRequest,
   RejectProposalRequest,
   RestoreRequest,
-  hashToken,
 } from "@repo/contracts";
-import {
-  sampleRuleSetVersionV1,
-  sampleRuleSetVersionV2,
-} from "@repo/contracts/fixtures";
-import { semanticDiff, type PluginBuilderBody } from "@repo/plugin-builder";
+import { sampleRuleSetVersionV1, sampleRuleSetVersionV2 } from "@repo/contracts/fixtures";
+import { type PluginBuilderBody, semanticDiff } from "@repo/plugin-builder";
 import { Elysia } from "elysia";
 import pino from "pino";
 import { store } from "./store.ts";
 
 const log = pino({ name: "farlands-api" });
 
-type Auth =
-  | { kind: "human"; id: string }
-  | { kind: "machine"; id: string };
+type Auth = { kind: "human"; id: string } | { kind: "machine"; id: string };
 
 function principal(headers: Record<string, string | undefined>): Auth | null {
   const bearer = headers.authorization?.replace(/^Bearer /i, "");
@@ -36,10 +31,7 @@ function principal(headers: Record<string, string | undefined>): Auth | null {
 
 function sseFormat(events: ReturnType<typeof store.eventsAfter>): string {
   return events
-    .map(
-      (event) =>
-        `id: ${event.id}\nevent: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`
-    )
+    .map((event) => `id: ${event.id}\nevent: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`)
     .join("");
 }
 
@@ -59,9 +51,9 @@ export const app = new Elysia()
     data: store.proposals.filter((p) => p.serverId === params.id),
   }))
   .get("/v1/servers/:id/logs", () => ({
-    data: ["[Paper] Done (12.4s)! For help, type \"help\""],
+    data: ['[Paper] Done (12.4s)! For help, type "help"'],
   }))
-  .get("/v1/servers/:id/events", ({ params, request }) => {
+  .get("/v1/servers/:id/events", ({ request }) => {
     const last = request.headers.get("Last-Event-ID") ?? undefined;
     const missed = store.eventsAfter(last);
     const stream = new ReadableStream({
@@ -110,7 +102,7 @@ export const app = new Elysia()
       log.info({ minted: minted.ruleSetVersion, issuedBy: auth.id }, "approval minted");
       return minted;
     },
-    { body: ApprovalMintRequest }
+    { body: ApprovalMintRequest },
   )
   .post(
     "/v1/servers/:id/rule-sets/author",
@@ -123,7 +115,7 @@ export const app = new Elysia()
       const version = await store.author(params.id, body.prompt, auth.id);
       return { version };
     },
-    { body: AuthorRulesRequest }
+    { body: AuthorRulesRequest },
   )
   .post(
     "/v1/servers/:id/preview",
@@ -137,7 +129,7 @@ export const app = new Elysia()
         rollbackTarget: store.versions.get(body.fromVersion) ?? sampleRuleSetVersionV1,
       };
     },
-    { body: PreviewRequest }
+    { body: PreviewRequest },
   )
   .post(
     "/v1/servers/:id/deploy",
@@ -161,7 +153,7 @@ export const app = new Elysia()
         data: store.startScriptedDeploy(params.id, body.toVersion, auth.id, result.tokenHash),
       };
     },
-    { body: DeployRequest }
+    { body: DeployRequest },
   )
   .get("/v1/deployments/:id", ({ params, set }) => {
     const row = store.deployments.get(params.id);
@@ -204,11 +196,11 @@ export const app = new Elysia()
         snapshotId: body.snapshotId,
       },
     }),
-    { body: RestoreRequest }
+    { body: RestoreRequest },
   )
   .post("/v1/proposals/:id/approve", ({ params, headers, set }) => {
     const auth = principal(headers);
-    if (!auth || auth.kind !== "human") {
+    if (auth?.kind !== "human") {
       set.status = 403;
       return {
         code: "approval_human_only",
@@ -231,11 +223,7 @@ export const app = new Elysia()
       issuedTo: auth.id,
       issuedBy: auth.id,
     });
-    const redemption = store.redeem(
-      minted.token,
-      auth.id,
-      sampleRuleSetVersionV2.contentDigest
-    );
+    const redemption = store.redeem(minted.token, auth.id, sampleRuleSetVersionV2.contentDigest);
     if (!redemption.ok) {
       set.status = 403;
       return redemption.refusal;
@@ -244,7 +232,7 @@ export const app = new Elysia()
       proposal.serverId,
       sampleRuleSetVersionV2.id,
       auth.id,
-      redemption.tokenHash
+      redemption.tokenHash,
     );
     return { deployment };
   })
@@ -252,7 +240,7 @@ export const app = new Elysia()
     "/v1/proposals/:id/reject",
     ({ params, headers, body, set }) => {
       const auth = principal(headers);
-      if (!auth || auth.kind !== "human") {
+      if (auth?.kind !== "human") {
         set.status = 403;
         return { error: "human session required" };
       }
@@ -267,7 +255,7 @@ export const app = new Elysia()
       proposal.reviewedAt = new Date().toISOString();
       return { data: proposal };
     },
-    { body: RejectProposalRequest }
+    { body: RejectProposalRequest },
   );
 
 const port = Number(process.env.PORT ?? 3001);

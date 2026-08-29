@@ -1,8 +1,8 @@
 "use client";
 
+import type { ApprovalMintResponse, PreviewResponse } from "@repo/contracts";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { ApprovalMintResponse, PreviewResponse } from "@repo/contracts";
 
 const FROM = "00000000-0000-4000-8000-0000000000a1";
 const TO = "00000000-0000-4000-8000-0000000000a2";
@@ -24,8 +24,7 @@ export default function ReviewPage() {
         body: JSON.stringify({
           serverId: "server-1",
           ruleSetVersion: TO,
-          contentDigest:
-            "sha256:2222222222222222222222222222222222222222222222222222222222222222",
+          contentDigest: "sha256:2222222222222222222222222222222222222222222222222222222222222222",
           issuedTo: "flk_cli-1",
         }),
       }),
@@ -56,8 +55,8 @@ export default function ReviewPage() {
         Freeze window: measuring (waiting on Engineer 2 / M1).
       </p>
       <p className="mb-6 text-sm text-[var(--muted)]">
-        Approve mints a short-lived token. Rule rollback later stops the rule acting
-        further; it does not undo diamonds already granted.
+        Approve mints a short-lived token. Rule rollback later stops the rule acting further; it
+        does not undo diamonds already granted.
       </p>
       <div className="flex gap-3">
         <button

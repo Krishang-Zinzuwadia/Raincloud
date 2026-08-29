@@ -1,15 +1,13 @@
-import {
-  pgTable,
-  text,
-  timestamp,
-  boolean,
-  index,
-  uniqueIndex,
-} from "drizzle-orm/pg-core";
+import { boolean, index, pgTable, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 import { users } from "./auth";
+import {
+  extensionSourceEnum,
+  extensionTypeEnum,
+  extensionVisibilityEnum,
+  gameTypeEnum,
+} from "./enums";
 import { gameServers } from "./servers";
-import {extensionTypeEnum, extensionSourceEnum, extensionVisibilityEnum, gameTypeEnum} from "./enums"
 
 export const extensions = pgTable(
   "extensions",
@@ -31,7 +29,10 @@ export const extensions = pgTable(
     visibility: extensionVisibilityEnum("visibility").notNull().default("public"),
 
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow().$onUpdate(() => new Date()),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
   },
   (table) => [
     index("extension_owner_id_idx").on(table.ownerId),
@@ -39,7 +40,7 @@ export const extensions = pgTable(
       table.name,
       table.gameType,
       table.gameVersion,
-      table.extensionVersion
+      table.extensionVersion,
     ),
   ],
 );
@@ -59,9 +60,6 @@ export const serverExtensions = pgTable(
     installedAt: timestamp("installed_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    uniqueIndex("server_extensions_server_extensions_idx").on(
-      table.serverId,
-      table.extensionId,
-    ),
+    uniqueIndex("server_extensions_server_extensions_idx").on(table.serverId, table.extensionId),
   ],
 );

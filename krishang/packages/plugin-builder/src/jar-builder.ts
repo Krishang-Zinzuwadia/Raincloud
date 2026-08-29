@@ -1,10 +1,7 @@
 import AdmZip from "adm-zip";
 import { getRuntimeJar } from "./runtime-jar";
 
-export async function buildPluginJar(
-  pluginName: string,
-  yamlContent: string
-): Promise<Buffer> {
+export async function buildPluginJar(pluginName: string, yamlContent: string): Promise<Buffer> {
   let runtimeJar: Buffer;
   try {
     runtimeJar = await getRuntimeJar();

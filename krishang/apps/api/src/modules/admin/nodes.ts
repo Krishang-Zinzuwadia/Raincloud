@@ -1,6 +1,6 @@
-import { eq, inArray, ne, and } from "drizzle-orm";
-import { status } from "elysia";
 import { gameServers, serverConfigs, serverK8s, users } from "@repo/db";
+import { and, eq, inArray, ne } from "drizzle-orm";
+import { status } from "elysia";
 
 import { db } from "../../db";
 import { makeKubernetesClients, NAMESPACE } from "../provisioning/kubernetes";
@@ -69,7 +69,7 @@ export abstract class AdminNodesService {
       const serverIds = new Set(
         scheduledPods
           .map((pod) => pod.metadata?.labels?.[SERVER_ID_LABEL])
-          .filter((id): id is string => Boolean(id))
+          .filter((id): id is string => Boolean(id)),
       );
 
       return {
@@ -93,7 +93,7 @@ export abstract class AdminNodesService {
   }
 
   static async get(nodeName: string) {
-    const nodes = await this.list();
+    const nodes = await AdminNodesService.list();
     const node = nodes.find((candidate) => candidate.name === nodeName);
     if (!node) throw status(404, "Node not found");
 
@@ -110,24 +110,19 @@ export abstract class AdminNodesService {
         pods.items
           .filter((pod) => pod.spec?.nodeName === nodeName)
           .map((pod) => pod.metadata?.labels?.[SERVER_ID_LABEL])
-          .filter((id): id is string => Boolean(id))
+          .filter((id): id is string => Boolean(id)),
       ),
     ];
 
     if (serverIds.length === 0) return { ...node, gameServers: [] };
 
     const servers = await db
-      .select(this.serverSelection)
+      .select(AdminNodesService.serverSelection)
       .from(gameServers)
       .innerJoin(users, eq(users.id, gameServers.userId))
       .leftJoin(serverConfigs, eq(serverConfigs.serverId, gameServers.id))
       .innerJoin(serverK8s, eq(serverK8s.serverId, gameServers.id))
-      .where(
-        and(
-          inArray(gameServers.id, serverIds),
-          ne(gameServers.currentState, "deleted")
-        )
-      );
+      .where(and(inArray(gameServers.id, serverIds), ne(gameServers.currentState, "deleted")));
 
     return { ...node, gameServers: servers };
   }
@@ -149,7 +144,7 @@ export abstract class AdminNodesService {
     }
 
     const servers = await db
-      .select(this.serverSelection)
+      .select(AdminNodesService.serverSelection)
       .from(gameServers)
       .innerJoin(users, eq(users.id, gameServers.userId))
       .leftJoin(serverConfigs, eq(serverConfigs.serverId, gameServers.id))

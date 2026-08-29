@@ -1,12 +1,7 @@
 // All enums
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const desiredStateEnum = pgEnum("desired_state", [
-  "ready",
-  "running",
-  "stopped",
-  "deleted",
-]);
+export const desiredStateEnum = pgEnum("desired_state", ["ready", "running", "stopped", "deleted"]);
 
 export const serverStatusEnum = pgEnum("server_status", [
   "ready",
@@ -20,11 +15,7 @@ export const serverStatusEnum = pgEnum("server_status", [
   "failed",
 ]);
 
-export const gameTypeEnum = pgEnum("game_type", [
-  "minecraft",
-  "rust",
-  "cs2",
-]);
+export const gameTypeEnum = pgEnum("game_type", ["minecraft", "rust", "cs2"]);
 
 export const extensionSourceEnum = pgEnum("extension_source", [
   "modrinth",
@@ -33,15 +24,9 @@ export const extensionSourceEnum = pgEnum("extension_source", [
   "user_created",
 ]);
 
-export const extensionTypeEnum = pgEnum("extension_type", [
-  "plugin",
-  "mod",
-]);
+export const extensionTypeEnum = pgEnum("extension_type", ["plugin", "mod"]);
 
-export const extensionVisibilityEnum = pgEnum("extension_visibility", [
-  "public",
-  "private",
-]);
+export const extensionVisibilityEnum = pgEnum("extension_visibility", ["public", "private"]);
 
 export const backupEventTypeEnum = pgEnum("backup_event_type", [
   "backup_started",
@@ -100,14 +85,6 @@ export const jobTypeEnum = pgEnum("job_type", [
   "backup_delete",
 ]);
 
-export const planEnum = pgEnum("plan", [
-  "starter",
-  "standard",
-  "pro",
-]);
+export const planEnum = pgEnum("plan", ["starter", "standard", "pro"]);
 
-export const logLevelEnum = pgEnum("log_level", [
-  "info",
-  "warn",
-  "error",
-]);
+export const logLevelEnum = pgEnum("log_level", ["info", "warn", "error"]);

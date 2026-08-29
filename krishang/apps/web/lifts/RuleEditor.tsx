@@ -1,8 +1,9 @@
 "use client";
+import { FlaskConical, Gift, Megaphone, MessageSquare, Plus, Trash2, Zap } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -10,16 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Gift,
-  MessageSquare,
-  Megaphone,
-  FlaskConical,
-  Zap,
-  Trash2,
-  Plus,
-} from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 const MINECRAFT_ITEMS: string[] = [
   "ACACIA_LOG",
@@ -222,16 +214,8 @@ type RuleEditorProps = {
   changeMessage: (id: number, value: string) => void;
   changeBroadcastMessage: (id: number, value: string) => void;
   addStarterKitItem: (id: number) => void;
-  changeStarterKitItem: (
-    ruleId: number,
-    itemIndex: number,
-    value: string
-  ) => void;
-  changeStarterKitAmount: (
-    ruleId: number,
-    itemIndex: number,
-    value: number
-  ) => void;
+  changeStarterKitItem: (ruleId: number, itemIndex: number, value: string) => void;
+  changeStarterKitAmount: (ruleId: number, itemIndex: number, value: number) => void;
   removeStarterKitItem: (ruleId: number, itemIndex: number) => void;
   changePotionEffect: (id: number, value: string) => void;
   changeAmplifier: (id: number, value: number) => void;
@@ -266,9 +250,7 @@ export function RuleEditor({
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b border-white/10">
             <CardTitle className="flex items-center gap-2.5 text-sm font-semibold text-white">
               <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-primary/20 bg-primary/10 backdrop-blur-md">
-                {RULE_ICON_MAP[rule.type] ?? (
-                  <Zap className="h-4 w-4 text-primary" />
-                )}
+                {RULE_ICON_MAP[rule.type] ?? <Zap className="h-4 w-4 text-primary" />}
               </div>
               <span>Rule {index + 1}</span>
               <span className="text-xs font-normal text-muted-foreground">
@@ -293,20 +275,13 @@ export function RuleEditor({
                 <Label className="text-xs font-medium text-white/70 uppercase tracking-wider">
                   Rule Type
                 </Label>
-                <Select
-                  value={rule.type}
-                  onValueChange={(val) => changeType(rule.id, val)}
-                >
+                <Select value={rule.type} onValueChange={(val) => changeType(rule.id, val)}>
                   <SelectTrigger className="border-white/10 bg-white/5">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="welcome_message">
-                      Welcome Message
-                    </SelectItem>
-                    <SelectItem value="broadcast_announcement">
-                      Broadcast Announcement
-                    </SelectItem>
+                    <SelectItem value="welcome_message">Welcome Message</SelectItem>
+                    <SelectItem value="broadcast_announcement">Broadcast Announcement</SelectItem>
                     <SelectItem value="starter_kit">Starter Kit</SelectItem>
                     <SelectItem value="potion_effect">Potion Effect</SelectItem>
                     <SelectItem value="player_action">Player Action</SelectItem>
@@ -318,10 +293,7 @@ export function RuleEditor({
                 <Label className="text-xs font-medium text-white/70 uppercase tracking-wider">
                   Trigger Event
                 </Label>
-                <Select
-                  value={rule.event}
-                  onValueChange={(val) => changeEvent(rule.id, val)}
-                >
+                <Select value={rule.event} onValueChange={(val) => changeEvent(rule.id, val)}>
                   <SelectTrigger className="border-white/10 bg-white/5">
                     <SelectValue placeholder="Select event" />
                   </SelectTrigger>
@@ -359,9 +331,7 @@ export function RuleEditor({
                 </Label>
                 <Textarea
                   value={rule.broadcastMessage}
-                  onChange={(e) =>
-                    changeBroadcastMessage(rule.id, e.target.value)
-                  }
+                  onChange={(e) => changeBroadcastMessage(rule.id, e.target.value)}
                   rows={3}
                   placeholder="Enter the message to broadcast to all players..."
                   className="border-white/10 bg-white/5 placeholder:text-muted-foreground resize-none"
@@ -379,9 +349,7 @@ export function RuleEditor({
                     <div key={idx} className="flex items-center gap-2">
                       <Select
                         value={item.material}
-                        onValueChange={(val) =>
-                          changeStarterKitItem(rule.id, idx, val)
-                        }
+                        onValueChange={(val) => changeStarterKitItem(rule.id, idx, val)}
                       >
                         <SelectTrigger className="flex-1 border-white/10 bg-white/5">
                           <SelectValue placeholder="Select item" />
@@ -399,11 +367,7 @@ export function RuleEditor({
                         min="1"
                         value={item.amount}
                         onChange={(e) =>
-                          changeStarterKitAmount(
-                            rule.id,
-                            idx,
-                            Number(e.target.value)
-                          )
+                          changeStarterKitAmount(rule.id, idx, Number(e.target.value))
                         }
                         className="w-20 border-white/10 bg-white/5"
                       />
@@ -457,9 +421,7 @@ export function RuleEditor({
                   <Input
                     type="number"
                     value={rule.amplifier}
-                    onChange={(e) =>
-                      changeAmplifier(rule.id, Number(e.target.value))
-                    }
+                    onChange={(e) => changeAmplifier(rule.id, Number(e.target.value))}
                     className="border-white/10 bg-white/5"
                   />
                 </div>
@@ -470,9 +432,7 @@ export function RuleEditor({
                   <Input
                     type="number"
                     value={rule.duration}
-                    onChange={(e) =>
-                      changeDuration(rule.id, Number(e.target.value))
-                    }
+                    onChange={(e) => changeDuration(rule.id, Number(e.target.value))}
                     className="border-white/10 bg-white/5"
                   />
                 </div>
@@ -506,9 +466,7 @@ export function RuleEditor({
                   <Input
                     type="number"
                     value={rule.actionAmount}
-                    onChange={(e) =>
-                      changeActionAmount(rule.id, Number(e.target.value))
-                    }
+                    onChange={(e) => changeActionAmount(rule.id, Number(e.target.value))}
                     className="border-white/10 bg-white/5"
                   />
                 </div>

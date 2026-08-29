@@ -34,7 +34,11 @@ export async function buildRuleJar(ruleJson: unknown): Promise<BuildRuleJarResul
     jarUrl = await uploadPluginJar(`${keyBase}.jar`, jarBytes);
     void jsonUrl;
   } else {
-    jsonUrl = await putOnce(`${keyBase}.json`, Buffer.from(JSON.stringify(body)), "application/json");
+    jsonUrl = await putOnce(
+      `${keyBase}.json`,
+      Buffer.from(JSON.stringify(body)),
+      "application/json",
+    );
     jarUrl = await putOnce(`${keyBase}.jar`, jarBytes, "application/java-archive");
   }
 

@@ -3,7 +3,11 @@ import { dirname, join } from "node:path";
 
 const root = process.env.ARTEFACT_DIR ?? join(process.cwd(), "artefacts");
 
-export async function putOnce(key: string, body: Uint8Array, contentType: string): Promise<string> {
+export async function putOnce(
+  key: string,
+  body: Uint8Array,
+  _contentType: string,
+): Promise<string> {
   const path = join(root, key);
   await mkdir(dirname(path), { recursive: true });
   try {

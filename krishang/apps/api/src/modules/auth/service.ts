@@ -1,6 +1,6 @@
+import { sessions } from "@repo/db";
 import { eq } from "drizzle-orm";
 import { status } from "elysia";
-import { sessions } from "@repo/db";
 
 import { db } from "../../db";
 import { isAdminEmail } from "../admin/allowlist";
@@ -18,7 +18,7 @@ export abstract class AuthService {
       cookieHeader.split(";").map((part) => {
         const [name, ...valueParts] = part.trim().split("=");
         return [name, valueParts.join("=")] as const;
-      })
+      }),
     );
 
     for (const cookieName of SESSION_COOKIE_NAMES) {

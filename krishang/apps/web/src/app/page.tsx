@@ -1,8 +1,8 @@
 "use client";
 
+import type { ServerSummary } from "@repo/contracts";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import type { ServerSummary } from "@repo/contracts";
 
 export default function ServersPage() {
   const { data } = useQuery({
