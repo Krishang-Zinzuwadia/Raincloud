@@ -1119,3 +1119,66 @@ a {
   border: 2px solid var(--surface);
   border-radius: 50%;
 }
+
+@media (max-width: 760px) {
+  .allay-companion {
+    right: 0.55rem;
+    bottom: 3.65rem;
+    gap: 0.45rem;
+  }
+
+  .allay-chat {
+    width: calc(100vw - 1.1rem);
+    height: min(520px, calc(100dvh - 9.75rem));
+    min-height: 0;
+  }
+
+  .allay-transcript {
+    padding: 0.78rem;
+  }
+
+  .allay-composer input {
+    font-size: 1rem;
+  }
+
+  .allay-pet-button,
+  .allay-sprite {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 500px) {
+  .allay-chat-header {
+    min-height: 46px;
+  }
+
+  .allay-message {
+    max-width: 94%;
+  }
+
+  .allay-message > p {
+    font-size: 0.8rem;
+  }
+
+  .allay-quick-actions {
+    padding: 0.48rem 0.55rem;
+  }
+
+  .allay-composer {
+    padding: 0.52rem 0.55rem 0.58rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .allay-working svg,
+  .allay-pet-state svg,
+  .allay-sprite.is-busy .allay-wing-left,
+  .allay-sprite.is-busy .allay-wing-right {
+    animation: none;
+  }
+
+  .allay-pet-button {
+    transition: none;
+  }
+}
