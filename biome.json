@@ -15,7 +15,8 @@
       "!**/infra",
       "!**/plugin-runtime",
       "!**/packages/db/migrations",
-      "!**/apps/api/backup-arch"
+      "!**/apps/api/backup-arch",
+      "!krishang/apps/web/public/assets/doom"
     ]
   },
   "overrides": [
