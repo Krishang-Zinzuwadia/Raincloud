@@ -13,7 +13,8 @@
   },
   "scripts": {
     "mock": "bun run --cwd apps/api mock",
-    "dev:api": "bun run --cwd apps/api mock",
+    "dev:api": "bun run --cwd ../apps/api dev",
+    "dev:mock-api": "bun run --cwd apps/api mock",
     "dev:web": "bun run --cwd apps/web dev",
     "test": "bun test",
     "lint": "biome check .",
