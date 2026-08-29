@@ -73,5 +73,6 @@ coverage/
 
 tools/pr-gatekeeper/gate.log
 
+*.diff
 # Local-only third-party panorama test assets. Do not distribute.
 /krishang/apps/web/public/assets/cherry-blossom-panorama/
