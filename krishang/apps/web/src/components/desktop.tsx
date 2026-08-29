@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { type ComponentType, type PointerEvent, useRef, useState } from "react";
 import { api, type LiveListResponse } from "@/lib/api";
+import { AllayCompanion } from "./allay-companion";
 import { DoomPlayer } from "./doom-player";
 import { PanoramaBackground } from "./panorama-background";
 
@@ -431,6 +432,13 @@ export function Desktop() {
             </section>
           );
         })}
+      <AllayCompanion
+        connectorState={connectorState}
+        operatorName="Krishang"
+        refreshServers={() => servers.refetch()}
+        servers={servers.data?.data}
+        serversLoading={servers.isPending}
+      />
       <footer className="desktop-taskbar">
         <button className="start-button" onClick={() => open("realms")} type="button">
           <span>◆</span> Start
