@@ -1,13 +1,14 @@
 # Raincloud
 
-**Raincloud is a control surface for cloud coding agents.**
+**Hi, this is our project (future product) Raincloud, a control surface for cloud coding agents.**
 
-Point it at a repository, describe the work, and an agent runs in an isolated
-cloud sandbox. You watch the run live, steer it mid-flight, review the diff it
-produced, and open a pull request — from a browser or a phone, without keeping a
+Workflow is simple, you point it at a repository, describe the work, and an agent runs in an isolated
+cloud sandbox. You watch the run live, steer it mid flight, review the diff it
+produced(always check the diffs :p), and open a PR from a browser or a phone, without keeping a
 development machine awake.
+In short, Raincloud is the new coding Environment that takes one step forward and leads us to an ero where coding is no longer done via static workstations but dynamic Mobile first environment. Everything on the go, so you never miss out on work.
 
-> **Status:** early build. The scaffold is being stood up; this README describes
+> **Status:** early build. Currently we're just scaffolding everything and working towards the V1 version
 > what the product is and how it is put together.
 
 ---
@@ -18,10 +19,10 @@ Coding agents are capable, but operating them is still awkward. They live in a
 terminal on one machine, their state is invisible the moment you walk away, and
 recovering a run that went sideways usually means starting over.
 
-Raincloud treats an agent run as a first-class, observable object:
+Raincloud treats an agent run as a first class, observable object:
 
 - It runs **in the cloud**, not on your laptop.
-- Its state is **legible** — queued, running, succeeded, failed, canceled — and
+- Its state is **legible** , queued, running, succeeded, failed, canceled  and
   its failures name the boundary that actually broke.
 - It is **steerable** while it works, not just before it starts.
 - It ends in something reviewable: a diff and a pull request.
@@ -41,7 +42,7 @@ Raincloud treats an agent run as a first-class, observable object:
 
 | Surface | What it is |
 |---|---|
-| **Web** | The primary dashboard — agents, sessions, live run view, diff review, settings, team. |
+| **Web** | The primary dashboard, agents, sessions, live run view, diff review, settings, team. |
 | **Mobile** | A full client at parity with web: start a session, follow the stream, steer, review, and approve from your phone. |
 
 Both read the same API and the same entitlements, so a run started on one is
@@ -51,18 +52,18 @@ fully controllable from the other.
 
 | Layer | Choice |
 |---|---|
-| **Control plane** | Node + Hono + TypeScript — auth, session lifecycle, GitHub, billing, event ingest, SSE |
-| **Sandbox** | Isolated per-session cloud sandbox with a persistent workspace, behind a `SandboxProvider` seam |
+| **Control plane** | Node + Hono + TypeScript auth, session lifecycle, GitHub, billing, event ingest, SSE |
+| **Sandbox** | Isolated per session cloud sandbox with a persistent workspace, behind a `SandboxProvider` seam |
 | **Agent runtime** | Agent processes running inside the sandbox, normalizing their events into one streaming protocol |
 | **Models** | Managed provider models by default; bring-your-own-key (Anthropic / OpenAI) as an alternative |
 | **Web** | Next.js (App Router), React |
 | **Mobile** | Expo / React Native, Expo Router, React Query |
 | **Auth** | Cognito (email + GitHub federation, JWT) for identity; GitHub for repository access |
-| **Database** | Postgres + Drizzle — control-plane state, lifecycle events, event index |
-| **Object storage** | S3 — transcripts (NDJSON), artifacts, workspace snapshots |
+| **Database** | Postgres + Drizzle  control-plane state, lifecycle events, event index |
+| **Object storage** | S3  transcripts (NDJSON), artifacts, workspace snapshots |
 | **Realtime** | SSE with `Last-Event-ID` replay, so reconnects resume instead of restarting |
 | **Secrets** | Managed secret store + KMS; user keys encrypted at rest, injected at invoke, never inlined |
-| **Payments** | Behind a `BillingProvider` seam — subscription tiers, metered usage, hard spend ceilings |
+| **Payments** | Behind a `BillingProvider` seam  subscription tiers, metered usage, hard spend ceilings |
 | **Observability** | Structured logs, error tracking, metrics and alarms |
 | **Infra** | Terraform, single primary region |
 
@@ -71,11 +72,11 @@ fully controllable from the other.
 Five interfaces exist so the pieces most likely to change can be swapped without
 a rewrite:
 
-- **`SandboxProvider`** — where the agent executes
-- **`AgentRuntime`** — which agent drives the work
-- **`GitProvider`** — which forge holds the repository
-- **`BillingProvider`** — which payment rail collects
-- **`Store`** — how control-plane state is persisted
+- **`SandboxProvider`** :  where the agent executes
+- **`AgentRuntime`** : which agent drives the work
+- **`GitProvider`** : which forge holds the repository
+- **`BillingProvider`** : which payment rail collects
+- **`Store`** : how control-plane state is persisted
 
 ### Object model
 
