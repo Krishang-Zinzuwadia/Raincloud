@@ -4,6 +4,7 @@ import { status } from "elysia";
 
 import { db } from "../../db";
 import { isAdminEmail } from "../admin/allowlist";
+import { localMockUserId } from "./mock-user";
 
 const SESSION_COOKIE_NAMES = [
   "session_token",
@@ -48,6 +49,9 @@ export abstract class AuthService {
   }
 
   static async requireUserId(cookieHeader: string): Promise<string> {
+    const mockUserId = localMockUserId(process.env.NODE_ENV, process.env.MOCK_USER_ID);
+    if (mockUserId) return mockUserId;
+
     const session = await AuthService.getValidSession(cookieHeader);
     if (!session) throw status(401, "Authentication required");
     return session.userId;
