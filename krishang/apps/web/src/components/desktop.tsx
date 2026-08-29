@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, type PanInfo } from "framer-motion";
 import {
   Bell,
   ChevronRight,
@@ -12,12 +11,14 @@ import {
   Server,
   Settings,
   ShieldCheck,
+  Skull,
   X,
 } from "lucide-react";
-import { type ComponentType, useState } from "react";
+import { type ComponentType, type PointerEvent, useRef, useState } from "react";
+import { DoomPlayer } from "./doom-player";
 import { PanoramaBackground } from "./panorama-background";
 
-type AppId = "realms" | "review" | "forge" | "activity" | "settings";
+type AppId = "realms" | "review" | "forge" | "activity" | "settings" | "doom";
 type AppDefinition = {
   id: AppId;
   label: string;
@@ -38,9 +39,11 @@ const apps: AppDefinition[] = [
   { id: "forge", label: "Rule Forge", detail: "Create safely", icon: Hammer, color: "#8b5e3c" },
   { id: "activity", label: "World Feed", detail: "Live events", icon: Compass, color: "#6d4a37" },
   { id: "settings", label: "Settings", detail: "Preferences", icon: Settings, color: "#9a7859" },
+  { id: "doom", label: "DOOM", detail: "Shareware", icon: Skull, color: "#9b3f2f" },
 ];
 
 function WindowBody({ app, close }: { app: AppDefinition; close: () => void }) {
+  if (app.id === "doom") return <DoomPlayer />;
   if (app.id === "realms")
     return (
       <>
@@ -197,12 +200,22 @@ type WindowState = {
   maximized: boolean;
 };
 
+type DragOperation = {
+  appId: AppId;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  startX: number;
+  startY: number;
+};
+
 const initialWindows: WindowState[] = [
   { appId: "realms", x: 220, y: 190, z: 1, minimized: false, maximized: false },
 ];
 
 export function Desktop() {
   const [windows, setWindows] = useState<WindowState[]>(initialWindows);
+  const dragOperation = useRef<DragOperation | null>(null);
   const nextZ = () => Math.max(0, ...windows.map((window) => window.z)) + 1;
   const focus = (appId: AppId) =>
     setWindows((items) =>
@@ -237,18 +250,61 @@ export function Desktop() {
           : window,
       ),
     );
-  const move = (appId: AppId, info: PanInfo) =>
+  const beginDrag = (appId: AppId, event: PointerEvent<HTMLDivElement>) => {
+    if (!event.isPrimary || event.button !== 0) return;
+    if ((event.target as HTMLElement).closest("button")) return;
+
+    const current = windows.find((window) => window.appId === appId);
+    if (!current || current.maximized) return;
+
+    focus(appId);
+    dragOperation.current = {
+      appId,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startX: current.x,
+      startY: current.y,
+    };
+    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  };
+  const drag = (event: PointerEvent<HTMLDivElement>) => {
+    const operation = dragOperation.current;
+    if (!operation || operation.pointerId !== event.pointerId) return;
+
+    const maxX = Math.max(12, window.innerWidth - 80);
+    const maxY = Math.max(60, window.innerHeight - 80);
+    const x = Math.min(
+      maxX,
+      Math.max(12, operation.startX + event.clientX - operation.startClientX),
+    );
+    const y = Math.min(
+      maxY,
+      Math.max(60, operation.startY + event.clientY - operation.startClientY),
+    );
+
     setWindows((items) =>
       items.map((window) =>
-        window.appId === appId
+        window.appId === operation.appId
           ? {
               ...window,
-              x: Math.max(12, window.x + info.offset.x),
-              y: Math.max(65, window.y + info.offset.y),
+              x,
+              y,
             }
           : window,
       ),
     );
+  };
+  const endDrag = (event: PointerEvent<HTMLDivElement>) => {
+    const operation = dragOperation.current;
+    if (!operation || operation.pointerId !== event.pointerId) return;
+    drag(event);
+    dragOperation.current = null;
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+      event.currentTarget.releasePointerCapture(event.pointerId);
+    }
+  };
 
   return (
     <div className="mc-desktop">
@@ -288,19 +344,20 @@ export function Desktop() {
           if (!app) return null;
           const Icon = app.icon;
           return (
-            <motion.section
+            <section
               aria-label={app.label}
-              className={`app-window pixel-border ${window.maximized ? "maximized" : ""}`}
-              drag={!window.maximized}
-              dragMomentum={false}
-              initial={{ opacity: 0, scale: 0.92, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className={`app-window pixel-border ${app.id === "doom" ? "doom-window" : ""} ${window.maximized ? "maximized" : ""}`}
               key={window.appId}
-              onDragEnd={(_event, info) => move(window.appId, info)}
               onPointerDown={() => focus(window.appId)}
               style={{ left: window.x, top: window.y, zIndex: window.z }}
             >
-              <div className="window-bar">
+              <div
+                className="window-bar"
+                onPointerCancel={endDrag}
+                onPointerDown={(event) => beginDrag(window.appId, event)}
+                onPointerMove={drag}
+                onPointerUp={endDrag}
+              >
                 <div className="window-title">
                   <span style={{ color: app.color }}>
                     <Icon size={17} />
@@ -331,10 +388,10 @@ export function Desktop() {
                   </button>
                 </div>
               </div>
-              <div className="window-content">
+              <div className={`window-content ${app.id === "doom" ? "doom-window-content" : ""}`}>
                 <WindowBody app={app} close={() => open("review")} />
               </div>
-            </motion.section>
+            </section>
           );
         })}
       <footer className="desktop-taskbar">

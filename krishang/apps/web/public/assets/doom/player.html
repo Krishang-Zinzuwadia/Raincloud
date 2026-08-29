@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>DOOM Shareware v1.9</title>
+    <link rel="stylesheet" href="./js-dos/js-dos.css" />
+    <link rel="stylesheet" href="./player.css?rev=native-start-1" />
+    <script src="./js-dos/js-dos.js" defer></script>
+    <script src="./player.js?rev=native-start-1" defer></script>
+  </head>
+  <body data-state="loading">
+    <main id="doom-shell">
+      <div
+        id="dos-player"
+        role="application"
+        aria-label="Original DOOM Shareware running in DOS"
+      ></div>
+
+      <div id="fatal-error" role="alert">
+        <strong>DOOM could not start.</strong>
+        <span id="error-message">The DOS runtime did not load.</span>
+        <button id="retry-doom" type="button">Try Again</button>
+      </div>
+    </main>
+  </body>
+</html>
