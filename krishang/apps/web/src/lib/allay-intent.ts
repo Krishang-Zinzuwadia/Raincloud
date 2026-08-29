@@ -93,7 +93,16 @@ const CREATE_TEMPLATES: CreateTemplateDefinition[] = [
   },
 ];
 
-const CREATE_PHRASES = ["create", "make", "provision", "host", "set up", "spin up", "launch", "new"];
+const CREATE_PHRASES = [
+  "create",
+  "make",
+  "provision",
+  "host",
+  "set up",
+  "spin up",
+  "launch",
+  "new",
+];
 
 function normalize(value: string) {
   return value
@@ -140,7 +149,9 @@ function parseCreateIntent(value: string, input: string): AllayCreateIntent | nu
 }
 
 export function createTemplateLabel(template: AllayCreateTemplate): string {
-  return CREATE_TEMPLATES.find((candidate) => candidate.id === template)?.label ?? "Minecraft realm";
+  return (
+    CREATE_TEMPLATES.find((candidate) => candidate.id === template)?.label ?? "Minecraft realm"
+  );
 }
 
 export function parseAllayIntent(value: string): AllayIntent {
@@ -183,9 +194,7 @@ export function parseAllayIntent(value: string): AllayIntent {
     return { kind: "power", action: "start" };
   }
 
-  if (
-    containsPhrase(input, ["copy", "address", "join code", "hostname", "ip", "endpoint"])
-  ) {
+  if (containsPhrase(input, ["copy", "address", "join code", "hostname", "ip", "endpoint"])) {
     return { kind: "copy" };
   }
 

@@ -1,10 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import {
-  type AllayCreateTemplate,
-  findMentionedServer,
-  parseAllayIntent,
-} from "./allay-intent";
+import { type AllayCreateTemplate, findMentionedServer, parseAllayIntent } from "./allay-intent";
 
 describe("parseAllayIntent", () => {
   test("recognizes conversational power commands", () => {
