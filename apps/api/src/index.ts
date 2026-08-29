@@ -1,8 +1,9 @@
-/**
- * The control plane.
- *
- * Scaffold only. Engineer 3 owns the application shell; Engineer 1 owns
- * src/modules/telemetry and src/modules/director inside it.
- */
+import "./load-env";
+import { app } from "./app";
 
-export const PLACEHOLDER = true;
+// Preserve the entry-point export used by backend integration tests and consumers.
+export { app };
+
+app.listen(process.env.PORT || 3001);
+
+console.log(`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`);
