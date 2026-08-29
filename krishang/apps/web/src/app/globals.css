@@ -1193,6 +1193,25 @@ a {
   }
 }
 
+@media (max-height: 520px) and (min-width: 761px) {
+  .allay-companion {
+    right: 0.6rem;
+    bottom: 3rem;
+    gap: 0.4rem;
+  }
+
+  .allay-chat {
+    height: calc(100dvh - 7.5rem);
+    min-height: 0;
+  }
+
+  .allay-pet-button,
+  .allay-sprite {
+    width: 56px;
+    height: 56px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .allay-working svg,
   .allay-pet-state svg,
