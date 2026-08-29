@@ -1,0 +1,21 @@
+{
+  "name": "@repo/mobile",
+  "version": "0.0.1",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "start": "expo start"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.85.5",
+    "expo": "~53.0.20",
+    "expo-notifications": "~0.31.4",
+    "expo-router": "~5.1.4",
+    "expo-status-bar": "~2.2.3",
+    "react": "19.0.0",
+    "react-native": "0.79.5",
+    "react-native-safe-area-context": "5.4.0",
+    "react-native-screens": "~4.11.1",
+    "react-native-sse": "^1.2.1"
+  }
+}
