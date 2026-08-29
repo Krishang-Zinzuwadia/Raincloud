@@ -241,8 +241,8 @@ export function Desktop() {
       : health.data?.status === "ok" && servers.data
         ? "connected"
         : "checking";
-  const runningRealms = servers.data?.data.filter((server) =>
-    ["running", "ready"].includes(server.currentState.toLocaleLowerCase()),
+  const runningRealms = servers.data?.data.filter(
+    (server) => server.currentState.toLocaleLowerCase() === "running",
   ).length;
   const totalRealms = servers.data?.data.length;
   const connectorLabel =

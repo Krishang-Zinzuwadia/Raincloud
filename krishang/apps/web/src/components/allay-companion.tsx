@@ -328,7 +328,7 @@ export function AllayCompanion({
       const reference = result.data?.id ? ` Its workload ID is ${result.data.id}.` : "";
       appendMessage(
         "allay",
-        `${intent.body.name} was accepted and is provisioning.${reference}`,
+        `${intent.body.name} was created successfully.${reference}`,
         "success",
       );
     } catch (error) {
