@@ -31,6 +31,14 @@ export const deploymentStateEnum = pgEnum("deployment_state", [
 
 export const proposalStatusEnum = pgEnum("proposal_status", ["pending", "approved", "rejected"]);
 
+export const experimentDesignEnum = pgEnum("experiment_design", ["pre_post", "parallel"]);
+
+export const experimentArmEnum = pgEnum("experiment_arm", [
+  "director",
+  "human",
+  "random_baseline",
+]);
+
 export const ruleSetVersions = pgTable(
   "rule_set_versions",
   {
@@ -128,6 +136,45 @@ export const proposals = pgTable(
     rejectionReason: text("rejection_reason"),
   },
   (table) => [index("proposals_server_idx").on(table.serverId)],
+);
+
+/**
+ * Evaluation records are append-only observations, not a scoreboard. The random
+ * baseline arm is stored explicitly so it cannot be lost in aggregation.
+ *
+ * Retention: keep records for two years. Pruning belongs to the existing
+ * scheduler; the explicit deadline prevents an unbounded audit dataset.
+ */
+export const experiments = pgTable(
+  "experiments",
+  {
+    experimentId: uuid("experiment_id").primaryKey().defaultRandom(),
+    design: experimentDesignEnum("design").notNull(),
+    arm: experimentArmEnum("arm").notNull(),
+    serverId: text("server_id")
+      .notNull()
+      .references(() => gameServers.id),
+    deploymentId: uuid("deployment_id")
+      .notNull()
+      .references(() => deployments.id),
+    ruleVersion: integer("rule_version").notNull(),
+    windowBeforeStart: timestamp("window_before_start", { withTimezone: true }).notNull(),
+    windowBeforeEnd: timestamp("window_before_end", { withTimezone: true }).notNull(),
+    windowAfterStart: timestamp("window_after_start", { withTimezone: true }).notNull(),
+    windowAfterEnd: timestamp("window_after_end", { withTimezone: true }).notNull(),
+    metricsBefore: jsonb("metrics_before").notNull(),
+    metricsAfter: jsonb("metrics_after").notNull(),
+    delta: jsonb("delta").notNull(),
+    nPlayers: integer("n_players").notNull(),
+    nSessions: integer("n_sessions").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    retainedUntil: timestamp("retained_until", { withTimezone: true }).notNull(),
+  },
+  (table) => [
+    index("experiments_server_created_idx").on(table.serverId, table.createdAt),
+    uniqueIndex("experiments_deployment_arm_idx").on(table.deploymentId, table.arm),
+  ],
 );
 
 export const machineTokens = pgTable(

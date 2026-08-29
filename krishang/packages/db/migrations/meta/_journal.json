@@ -50,6 +50,13 @@
       "when": 1783000000001,
       "tag": "0006_live_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1783000000002,
+      "tag": "0007_experiments",
+      "breakpoints": true
     }
   ]
 }
