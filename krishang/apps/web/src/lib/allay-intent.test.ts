@@ -1,6 +1,10 @@
 import { describe, expect, test } from "bun:test";
 
-import { parseAllayIntent } from "./allay-intent";
+import {
+  type AllayCreateTemplate,
+  findMentionedServer,
+  parseAllayIntent,
+} from "./allay-intent";
 
 describe("parseAllayIntent", () => {
   test("recognizes conversational power commands", () => {
@@ -28,5 +32,55 @@ describe("parseAllayIntent", () => {
   test("falls back safely for empty or unsupported requests", () => {
     expect(parseAllayIntent(" ")).toEqual({ kind: "unknown" });
     expect(parseAllayIntent("tell me a joke")).toEqual({ kind: "unknown" });
+  });
+
+  test.each([
+    ["create a paper server named paper town", "minecraft_paper", "paper", "paper town"],
+    [
+      "make a vanilla minecraft realm called block party",
+      "minecraft_vanilla",
+      "vanilla",
+      "block party",
+    ],
+  ])("maps %s to a safe template", (prompt, template, type, name) => {
+    const intent = parseAllayIntent(prompt as string);
+    expect(intent.kind).toBe("create");
+    if (intent.kind !== "create") throw new Error("Expected a create intent");
+
+    expect(intent.template).toBe(template as AllayCreateTemplate);
+    expect(intent.body).toMatchObject({
+      name,
+      game: "minecraft",
+      type,
+      version: "1.21.8",
+      cpuCores: 1,
+      ramMb: 2048,
+      storageGb: 5,
+    });
+  });
+});
+
+describe("findMentionedServer", () => {
+  const servers = [
+    { id: "one", name: "Survival" },
+    { id: "two", name: "Survival Two" },
+    { id: "three", name: "Creative" },
+  ];
+
+  test("prefers the longest explicit realm name", () => {
+    expect(findMentionedServer(servers, "wake Survival Two")?.id).toBe("two");
+  });
+
+  test("supports numbered choices", () => {
+    expect(findMentionedServer(servers, "server 3")?.id).toBe("three");
+  });
+
+  test("only uses conversation context for a pronoun", () => {
+    expect(findMentionedServer(servers, "restart it", "three")?.id).toBe("three");
+    expect(findMentionedServer(servers, "restart a server", "three")).toBeNull();
+  });
+
+  test("selects the only available realm without clarification", () => {
+    expect(findMentionedServer([servers[0]], "wake my realm")?.id).toBe("one");
   });
 });
