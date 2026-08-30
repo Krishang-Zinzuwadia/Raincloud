@@ -54,7 +54,7 @@ export const serversModule = new Elysia({ prefix: "/api/servers" })
 
   // All routes below this derive require a valid user session.
   .derive(async ({ headers }) => ({
-    userId: await AuthService.requireUserId(headers.cookie ?? ""),
+    userId: await AuthService.requireServerControlUserId(headers.cookie ?? ""),
   }))
   .get("/", async ({ userId }) => {
     const servers = await ServerService.getAllByUser(userId);

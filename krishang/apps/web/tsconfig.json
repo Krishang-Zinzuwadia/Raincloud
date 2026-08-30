@@ -3,6 +3,7 @@
     "strict": true,
     "target": "ES2022",
     "lib": ["dom", "dom.iterable", "es2022"],
+    "types": ["bun-types"],
     "jsx": "preserve",
     "module": "ESNext",
     "moduleResolution": "bundler",

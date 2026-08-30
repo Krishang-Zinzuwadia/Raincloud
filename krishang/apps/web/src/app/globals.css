@@ -355,6 +355,19 @@ a {
 .realm-row:hover {
   background: #eddcc8;
 }
+.realm-row.live-realm-row,
+.realm-row.live-realm-row:hover {
+  background: #f7efe3;
+  cursor: default;
+}
+.live-realm-row > span:nth-child(2) {
+  min-width: 0;
+}
+.live-realm-row .realm-tps {
+  max-width: 50%;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
 .realm-row span:nth-child(2) {
   flex: 1;
 }
@@ -592,6 +605,16 @@ a {
   .window-content {
     padding: 0.85rem;
   }
+  .live-realm-row {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .live-realm-row .realm-tps {
+    width: 100%;
+    max-width: none;
+    margin-left: 1.3rem;
+    text-align: left;
+  }
   .sun,
   .cloud {
     display: none;
@@ -605,5 +628,599 @@ a {
     left: 12px !important;
     top: 238px !important;
     width: calc(100vw - 24px);
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@keyframes rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Allay manual control */
+.allay-companion {
+  --allay-deep: oklch(0.39 0.105 226);
+  --allay-mid: oklch(0.66 0.13 222);
+  --allay-bright: oklch(0.82 0.105 211);
+  --allay-pale: oklch(0.93 0.04 207);
+  position: fixed;
+  z-index: 12;
+  right: 1rem;
+  bottom: 3.85rem;
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+  gap: 0.7rem;
+  pointer-events: none;
+}
+
+.allay-chat,
+.allay-anchor {
+  pointer-events: auto;
+}
+
+.allay-chat {
+  display: grid;
+  width: min(400px, calc(100vw - 2rem));
+  height: min(510px, calc(100svh - 10.5rem));
+  min-height: 360px;
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  overflow: hidden;
+  color: var(--fg);
+  background: var(--surface);
+  transform-origin: right bottom;
+}
+
+.allay-chat-header {
+  display: flex;
+  min-height: 49px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.8rem;
+  padding: 0.55rem 0.62rem 0.55rem 0.8rem;
+  color: #fff6eb;
+  background: #6b4b34;
+  border-bottom: 1px solid #3f2b1e;
+}
+
+.allay-chat-header > div:first-child {
+  display: grid;
+  min-width: 0;
+  gap: 0.18rem;
+}
+
+.allay-chat-title {
+  font-family: "Monocraft", ui-monospace, monospace;
+  font-size: 0.87rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.allay-connection {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #e3c6a8;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.allay-connection > span {
+  width: 0.43rem;
+  height: 0.43rem;
+  flex: 0 0 auto;
+  background: var(--gold);
+  border: 1px solid oklch(0.24 0.03 49 / 0.68);
+  border-radius: 50%;
+}
+
+.allay-connection.connected > span {
+  background: oklch(0.76 0.13 135);
+}
+
+.allay-connection.unavailable > span {
+  background: oklch(0.7 0.14 39);
+}
+
+.allay-chat-header > button {
+  display: grid;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #fff6eb;
+  background: oklch(0.31 0.043 51);
+  border: 1px solid oklch(0.67 0.05 65 / 0.56);
+  cursor: pointer;
+}
+
+.allay-chat-header > button:hover {
+  background: var(--redstone);
+}
+
+.allay-transcript {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.9rem;
+  background: oklch(0.955 0.016 77);
+  touch-action: pan-y;
+  overscroll-behavior: contain;
+}
+
+.allay-message {
+  display: grid;
+  max-width: 88%;
+  gap: 0.2rem;
+  margin-bottom: 0.72rem;
+}
+
+.allay-message > span {
+  color: var(--muted);
+  font-size: 0.61rem;
+  font-weight: 800;
+  letter-spacing: 0.045em;
+  text-transform: uppercase;
+}
+
+.allay-message > p {
+  margin: 0;
+  padding: 0.64rem 0.7rem;
+  color: var(--fg);
+  background: var(--allay-pale);
+  border: 1px solid oklch(0.72 0.07 211);
+  font-size: 0.78rem;
+  line-height: 1.48;
+  overflow-wrap: anywhere;
+  white-space: pre-line;
+}
+
+.allay-message.operator {
+  margin-left: auto;
+  justify-items: end;
+}
+
+.allay-message.operator > p {
+  background: var(--surface-raised);
+  border-color: var(--line);
+}
+
+.allay-message.success > p {
+  background: oklch(0.92 0.045 127);
+  border-color: oklch(0.69 0.08 126);
+}
+
+.allay-message.error > p {
+  color: var(--redstone);
+  background: oklch(0.93 0.04 39);
+  border-color: oklch(0.68 0.09 39);
+}
+
+.allay-server-choices {
+  display: grid;
+  min-width: 0;
+  gap: 0.42rem;
+  margin: 0 0 0.8rem;
+  padding: 0;
+  border: 0;
+}
+
+.allay-server-choices > button {
+  display: grid;
+  min-height: 44px;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.58rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid #c9ad91;
+  text-align: left;
+  cursor: pointer;
+}
+
+.allay-server-choices > button:hover {
+  background: var(--allay-pale);
+  border-color: var(--allay-mid);
+}
+
+.allay-server-choices > button > span {
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  color: oklch(0.98 0.008 210);
+  background: var(--allay-deep);
+  font-size: 0.66rem;
+  font-weight: 850;
+}
+
+.allay-server-choices strong {
+  overflow: hidden;
+  font-size: 0.75rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.allay-server-choices small {
+  color: var(--muted);
+  font-size: 0.65rem;
+}
+
+.allay-confirmation {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.3rem 0.55rem;
+  margin-bottom: 0.75rem;
+  padding: 0.68rem;
+  color: var(--redstone);
+  background: oklch(0.93 0.04 48);
+  border: 1px solid oklch(0.68 0.085 45);
+}
+
+.allay-confirmation > svg {
+  margin-top: 0.05rem;
+}
+
+.allay-confirmation > div:nth-child(2) {
+  display: grid;
+  gap: 0.12rem;
+}
+
+.allay-confirmation strong {
+  font-size: 0.72rem;
+}
+
+.allay-confirmation span {
+  color: var(--muted);
+  font-size: 0.67rem;
+  line-height: 1.4;
+}
+
+.allay-confirmation-actions {
+  display: flex;
+  grid-column: 2;
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.allay-confirmation-actions > button {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 0.33rem;
+  padding: 0.36rem 0.55rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  font-size: 0.68rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.allay-confirmation-actions > button.confirm {
+  color: #fff6eb;
+  background: #6b4b34;
+  border-color: #3f2b1e;
+}
+
+.allay-confirmation-actions > button:hover {
+  background: var(--surface-raised);
+}
+
+.allay-confirmation-actions > button.confirm:hover {
+  background: #3f2b1e;
+}
+
+.allay-working {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.58rem 0.66rem;
+  color: var(--allay-deep);
+  background: var(--allay-pale);
+  border: 1px solid oklch(0.72 0.07 211);
+  font-size: 0.7rem;
+  font-weight: 800;
+}
+
+.allay-working svg,
+.allay-sprite.is-busy + .allay-pet-state svg {
+  animation: rotate 1s linear infinite;
+}
+
+.allay-quick-actions {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+  margin: 0;
+  padding: 0.58rem 0.7rem;
+  background: var(--surface);
+  border: 0;
+  border-top: 1px solid #c9ad91;
+}
+
+.allay-quick-actions > button {
+  display: inline-flex;
+  min-height: 31px;
+  align-items: center;
+  gap: 0.32rem;
+  padding: 0.34rem 0.48rem;
+  color: var(--allay-deep);
+  background: var(--allay-pale);
+  border: 1px solid oklch(0.69 0.07 211);
+  font-size: 0.66rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.allay-quick-actions > button:hover:not(:disabled) {
+  background: oklch(0.88 0.065 208);
+}
+
+.allay-quick-actions > button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.allay-composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 42px;
+  gap: 0.45rem;
+  padding: 0.62rem 0.7rem 0.7rem;
+  background: var(--surface);
+  border-top: 1px solid #c9ad91;
+}
+
+.allay-composer input {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 0.55rem 0.62rem;
+  color: var(--fg);
+  background: oklch(0.985 0.008 78);
+  border: 1px solid var(--line);
+  font-size: 0.78rem;
+}
+
+.allay-composer input::placeholder {
+  color: oklch(0.48 0.03 58);
+}
+
+.allay-composer input:disabled {
+  background: var(--surface-raised);
+  cursor: wait;
+}
+
+.allay-composer > button {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  color: oklch(0.98 0.008 210);
+  background: var(--allay-deep);
+  border: 1px solid oklch(0.27 0.075 226);
+  cursor: pointer;
+}
+
+.allay-composer > button:hover:not(:disabled) {
+  background: oklch(0.32 0.11 227);
+}
+
+.allay-composer > button:disabled {
+  color: oklch(0.63 0.04 211);
+  background: oklch(0.8 0.04 210);
+  cursor: not-allowed;
+}
+
+.allay-anchor {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.allay-nudge {
+  padding: 0.48rem 0.62rem;
+  color: var(--fg);
+  background: var(--surface);
+  border: 1px solid #3f2b1e;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.3);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.allay-pet-button {
+  position: relative;
+  display: grid;
+  width: 74px;
+  height: 74px;
+  padding: 0;
+  place-items: center;
+  color: var(--allay-mid);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  filter: drop-shadow(0 5px 2px oklch(0.16 0.035 226 / 0.38));
+  transition: transform 160ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.allay-pet-button:hover {
+  transform: translateY(-2px);
+}
+
+.allay-pet-button:active {
+  transform: translateY(0);
+}
+
+.allay-sprite {
+  width: 72px;
+  height: 72px;
+  overflow: visible;
+}
+
+.allay-wing {
+  fill: var(--allay-deep);
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.allay-wing-light {
+  fill: oklch(0.72 0.115 218);
+}
+
+.allay-body-shadow,
+.allay-head-shadow {
+  fill: oklch(0.3 0.105 229);
+}
+
+.allay-body,
+.allay-head {
+  fill: var(--allay-mid);
+}
+
+.allay-face {
+  fill: var(--allay-bright);
+}
+
+.allay-eye {
+  fill: oklch(0.22 0.055 236);
+}
+
+.allay-eye-shine {
+  fill: oklch(0.97 0.018 202);
+}
+
+.allay-mouth {
+  fill: oklch(0.38 0.09 226);
+}
+
+.allay-arm {
+  fill: oklch(0.58 0.135 225);
+}
+
+.allay-sprite.is-busy .allay-wing-left {
+  animation: allay-work-left 500ms ease-in-out infinite alternate;
+}
+
+.allay-sprite.is-busy .allay-wing-right {
+  animation: allay-work-right 500ms ease-in-out infinite alternate;
+}
+
+@keyframes allay-work-left {
+  to {
+    transform: rotate(-8deg) translateX(-2px);
+  }
+}
+
+@keyframes allay-work-right {
+  to {
+    transform: rotate(8deg) translateX(2px);
+  }
+}
+
+.allay-pet-state {
+  position: absolute;
+  right: 1px;
+  bottom: 3px;
+  display: grid;
+  width: 23px;
+  height: 23px;
+  place-items: center;
+  color: oklch(0.98 0.008 210);
+  background: var(--allay-deep);
+  border: 2px solid var(--surface);
+  border-radius: 50%;
+}
+
+@media (max-width: 760px) {
+  .allay-companion {
+    right: 0.55rem;
+    bottom: 3.65rem;
+    gap: 0.45rem;
+  }
+
+  .allay-chat {
+    width: calc(100vw - 1.1rem);
+    height: min(520px, calc(100dvh - 9.75rem));
+    min-height: 0;
+  }
+
+  .allay-transcript {
+    padding: 0.78rem;
+  }
+
+  .allay-composer input {
+    font-size: 1rem;
+  }
+
+  .allay-pet-button,
+  .allay-sprite {
+    width: 64px;
+    height: 64px;
+  }
+}
+
+@media (max-width: 500px) {
+  .allay-chat-header {
+    min-height: 46px;
+  }
+
+  .allay-message {
+    max-width: 94%;
+  }
+
+  .allay-message > p {
+    font-size: 0.8rem;
+  }
+
+  .allay-quick-actions {
+    padding: 0.48rem 0.55rem;
+  }
+
+  .allay-composer {
+    padding: 0.52rem 0.55rem 0.58rem;
+  }
+}
+
+@media (max-height: 520px) and (min-width: 761px) {
+  .allay-companion {
+    right: 0.6rem;
+    bottom: 3rem;
+    gap: 0.4rem;
+  }
+
+  .allay-chat {
+    height: calc(100dvh - 7.5rem);
+    min-height: 0;
+  }
+
+  .allay-pet-button,
+  .allay-sprite {
+    width: 56px;
+    height: 56px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .allay-working svg,
+  .allay-pet-state svg,
+  .allay-sprite.is-busy .allay-wing-left,
+  .allay-sprite.is-busy .allay-wing-right {
+    animation: none;
+  }
+
+  .allay-pet-button {
+    transition: none;
   }
 }
